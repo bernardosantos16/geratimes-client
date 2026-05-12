@@ -1,0 +1,73 @@
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-empty-state',
+  standalone: true,
+  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div class="empty-state">
+      <div class="icon">{{ icon }}</div>
+      <h3>{{ title }}</h3>
+      <p>{{ message }}</p>
+      @if (actionLabel) {
+        <button class="btn-primary" (click)="action.emit()">
+          {{ actionLabel }}
+        </button>
+      }
+    </div>
+  `,
+  styles: [`
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      gap: 0.75rem;
+
+      .icon {
+        font-size: 3rem;
+        opacity: 0.4;
+        margin-bottom: 0.5rem;
+      }
+
+      h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      p {
+        font-size: 0.9rem;
+        color: var(--text2);
+        max-width: 320px;
+        line-height: 1.6;
+      }
+
+      .btn-primary {
+        margin-top: 0.5rem;
+        background: var(--accent);
+        color: #050f09;
+        border: none;
+        padding: 0.55rem 1.4rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition: filter 0.2s;
+
+        &:hover { filter: brightness(1.1); }
+      }
+    }
+  `],
+})
+export class EmptyStateComponent {
+  @Input() icon = '📭';
+  @Input() title = 'Nenhum item encontrado';
+  @Input() message = 'Não há dados para exibir no momento.';
+  @Input() actionLabel = '';
+  @Output() action = new EventEmitter<void>();
+}
