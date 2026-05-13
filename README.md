@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # GeraTimes — Cliente Angular
 
 Frontend do sistema **Ferino** de gerenciamento de partidas e times de futebol.
@@ -75,3 +76,6 @@ export const environment = {
 | Partidas | Criação, listagem paginada, exclusão |
 | Gerar Times | Wizard 3 passos: selecionar → configurar → resultado balanceado |
 | UI | Tema dark/light, toast global, confirmação de exclusão, responsivo |
+=======
+# geratimes-client
+>>>>>>> 42d7909f61f07d3e1974c72c323a38979cb0f4d6
