@@ -15,7 +15,7 @@ export interface TokenResponseDTO {
 }
 
 export interface LogoutRequestDTO {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 // --------------- USERS ---------------
@@ -64,6 +64,8 @@ export interface UpdateClubMemberRequestDTO {
   name?: string;
   rating?: number;    // 1-5
   clubRole?: ClubRole;
+  timesMvp?: number;
+  timesChampion?: number;
 }
 
 export interface ClubMemberResponseDTO {
@@ -141,8 +143,8 @@ export interface UpdateTeamJerseyRequestDTO {
 
 export interface TeamResponseDTO {
   id: number;
-  // matchId: string;    // uuid
-  clubJerseyId: number;
+  matchId: string;    // uuid
+  clubJerseyId?: number | null;
 }
 
 export interface PageTeamResponseDTO extends PageDTO<TeamResponseDTO> {}

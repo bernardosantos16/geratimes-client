@@ -15,7 +15,9 @@ import {
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { JerseyBadgeComponent } from '../../../shared/components/jersey-badge/jersey-badge.component';
-import { RatingStarsComponent } from '../../../shared/components/rating-stars/rating-stars.component';
+import { SquareRatingComponent } from '../../../shared/components/square-rating/square-rating.component';
+import { TeamCardComponent } from '../../../shared/components/team-card/team-card.component';
+import { PlayerUiModel, TeamUiModel } from '../../../core/models/team-ui.model';
 import { forkJoin } from 'rxjs';
 
 type Step = 'select-players' | 'configure' | 'result';
@@ -30,7 +32,7 @@ interface MemberWithRole extends ClubMemberResponseDTO {
   imports: [
     CommonModule, RouterModule, ReactiveFormsModule,
     PageHeaderComponent, LoadingSpinnerComponent,
-    JerseyBadgeComponent, RatingStarsComponent,
+    JerseyBadgeComponent, SquareRatingComponent, TeamCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -71,7 +73,7 @@ interface MemberWithRole extends ClubMemberResponseDTO {
                   <div class="player-avatar">{{ member.name[0].toUpperCase() }}</div>
                   <div class="player-details">
                     <span class="player-name">{{ member.name }}</span>
-                    <app-rating-stars [value]="member.rating ?? 0" />
+                    <app-square-rating [value]="member.rating ?? 0" />
                   </div>
                 </div>
                 <div class="position-toggle">
@@ -172,40 +174,16 @@ interface MemberWithRole extends ClubMemberResponseDTO {
             <button class="btn-outline" (click)="goToStep('configure')">Regerar</button>
           </div>
 
+          <p class="swap-note">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+
           <div class="teams-grid">
-            @for (team of result()!.teams; track team.teamId; let i = $index) {
-              <div class="team-card">
-                <div class="team-header">
-                  <span class="team-title">Time {{ i + 1 }}</span>
-                  @if (jerseys()[i]) {
-                    <app-jersey-badge
-                      [name]="jerseys()[i].name"
-                      [hexColor]="jerseys()[i].hexColor"
-                      [isGoalkeeper]="false" />
-                  }
-                </div>
-
-                <div class="team-players">
-                  @for (memberId of team.lineMemberIds; track memberId) {
-                    <div class="team-player">
-                      <span class="player-dot line">🏃</span>
-                      <span>{{ memberName(memberId) }}</span>
-                      <app-rating-stars [value]="memberRating(memberId)" />
-                    </div>
-                  }
-                  @if (team.goalkeeperMemberId) {
-                    <div class="team-player gk">
-                      <span class="player-dot">🥅</span>
-                      <span>{{ memberName(team.goalkeeperMemberId) }}</span>
-                    </div>
-                  }
-                </div>
-
-                <div class="team-stats">
-                  <span>{{ team.lineMemberIds.length }} de linha</span>
-                  @if (team.goalkeeperMemberId) { <span>+ 1 goleiro</span> }
-                </div>
-              </div>
+            @for (team of generatedTeamCards(); track team.id) {
+              <app-team-card
+                [team]="team"
+                [enableSwap]="!swapping()"
+                [dropListId]="dropListId(team.id)"
+                [connectedDropLists]="generatedDropListIds()"
+                (swapRequested)="swapGeneratedPlayers($event)" />
             }
           </div>
 
@@ -387,41 +365,13 @@ interface MemberWithRole extends ClubMemberResponseDTO {
 
     .result-label { font-size: 1.1rem; font-weight: 700; color: var(--text); }
 
+    .swap-note {
+      font-size: 0.82rem; color: var(--text3); text-align: center;
+      margin: -0.35rem 0 0.15rem;
+    }
+
     .teams-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;
-    }
-
-    .team-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
-      transition: border-color 0.2s;
-      &:hover { border-color: var(--accent); }
-    }
-
-    .team-header {
-      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
-    }
-
-    .team-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;
-      color: var(--text); letter-spacing: 0.06em;
-    }
-
-    .team-players { display: flex; flex-direction: column; gap: 0.4rem; }
-
-    .team-player {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-size: 0.85rem; color: var(--text); padding: 0.3rem 0;
-      border-bottom: 1px solid var(--border);
-      &:last-child { border-bottom: none; }
-      &.gk { color: var(--blue); }
-    }
-
-    .player-dot { font-size: 0.9rem; flex-shrink: 0; }
-
-    .team-stats {
-      display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text3);
-      padding-top: 0.5rem; border-top: 1px solid var(--border);
     }
 
     /* Unassigned */
@@ -452,6 +402,7 @@ export class GenerateTeamsComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly generating = signal(false);
+  readonly swapping = signal(false);
   readonly currentStep = signal<Step>('select-players');
   readonly members = signal<MemberWithRole[]>([]);
   readonly jerseys = signal<ClubJerseyResponseDTO[]>([]);
@@ -470,6 +421,15 @@ export class GenerateTeamsComponent implements OnInit {
     const perTeam = this.configForm.get('maxLinePlayers')?.value ?? 5;
     return perTeam > 0 ? Math.floor(this.lineCount() / perTeam) : 0;
   });
+  readonly generatedTeamCards = computed<TeamUiModel[]>(() => {
+    const response = this.result();
+    if (!response) return [];
+
+    return response.teams.map((team, index) => this.toTeamCardModel(team, index));
+  });
+  readonly generatedDropListIds = computed(() =>
+    this.generatedTeamCards().map((team) => this.dropListId(team.id))
+  );
 
   readonly stepLabels = [
     { key: 'select-players' as Step, label: 'Jogadores' },
@@ -548,6 +508,93 @@ export class GenerateTeamsComponent implements OnInit {
         this.toast.error(err.error?.detail ?? 'Erro ao gerar times.');
       },
     });
+  }
+
+  swapGeneratedPlayers(event: { from: PlayerUiModel; to: PlayerUiModel }): void {
+    if (this.swapping() || event.from.position !== event.to.position) return;
+
+    this.swapping.set(true);
+    this.teamsService.swapPlayers({
+      matchId: this.matchId,
+      swaps: [{ memberIdFrom: event.from.id, memberIdTo: event.to.id }],
+    }).subscribe({
+      next: () => {
+        this.applyLocalSwap(event.from, event.to);
+        this.swapping.set(false);
+        this.toast.success('Jogadores trocados.');
+      },
+      error: (err) => {
+        this.swapping.set(false);
+        this.toast.error(err.error?.detail ?? 'Erro ao trocar jogadores.');
+      },
+    });
+  }
+
+  dropListId(teamId: number): string {
+    return `generated-team-${teamId}`;
+  }
+
+  private applyLocalSwap(from: PlayerUiModel, to: PlayerUiModel): void {
+    this.result.update((current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        teams: current.teams.map((team) => {
+          if (from.position === 'GOAL') {
+            return {
+              ...team,
+              goalkeeperMemberId: team.goalkeeperMemberId === from.id
+                ? to.id
+                : team.goalkeeperMemberId === to.id ? from.id : team.goalkeeperMemberId,
+            };
+          }
+
+          return {
+            ...team,
+            lineMemberIds: team.lineMemberIds.map((id) =>
+              id === from.id ? to.id : id === to.id ? from.id : id
+            ),
+          };
+        }),
+      };
+    });
+  }
+
+  private toTeamCardModel(team: GeneratedTeamDTO, index: number): TeamUiModel {
+    const jersey = this.jerseys()[index];
+    const teamName = jersey?.name ?? `Time ${index + 1}`;
+    const teamColor = jersey?.hexColor ?? this.fallbackTeamColor(index);
+
+    return {
+      id: team.teamId,
+      jerseyName: teamName,
+      jerseyColor: teamColor,
+      players: team.lineMemberIds.map((id) => this.toPlayerModel(id, 'LINE', team.teamId)),
+      goalkeeper: team.goalkeeperMemberId
+        ? this.toPlayerModel(team.goalkeeperMemberId, 'GOAL', team.teamId)
+        : null,
+    };
+  }
+
+  private toPlayerModel(memberId: number, position: 'LINE' | 'GOAL', teamId: number): PlayerUiModel {
+    const member = this.membersMap.get(memberId);
+
+    return {
+      id: memberId,
+      name: member?.name ?? `Jogador #${memberId}`,
+      rating: member?.rating ?? 0,
+      timesChampion: member?.timesChampion ?? 0,
+      timesMvp: member?.timesMvp ?? 0,
+      position,
+      teamId,
+      isGoalkeeper: position === 'GOAL',
+    };
+  }
+
+  private fallbackTeamColor(index: number): string {
+    const colors = ['#1565c0', '#555555', '#00a844', '#d63050', '#f39c12', '#7c4dff'];
+    return colors[index % colors.length];
   }
 
   memberName(id: number): string {

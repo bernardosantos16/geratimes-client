@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ferino — Seu Futebol, Organizado.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a26;
+    --surface: #16161f;
+    --surface2: #1e1e2e;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f8;
+    --text2: #9090b0;
+    --text3: #5a5a80;
+    --accent: #4dff8f;
+    --accent2: #00c957;
+    --accent-dim: rgba(77,255,143,0.12);
+    --accent-glow: rgba(77,255,143,0.3);
+    --red: #ff4d6a;
+    --yellow: #ffd94d;
+    --blue: #4d9fff;
+    --card-bg: #13131c;
+    --hero-grad: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(77,255,143,0.18) 0%, transparent 70%);
+    --orange: #fdcb6e;
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f5f0;
+    --bg2: #ebebE5;
+    --bg3: #e0e0d8;
+    --surface: #ffffff;
+    --surface2: #f0f0ea;
+    --border: rgba(0,0,0,0.08);
+    --text: #111118;
+    --text2: #44445a;
+    --text3: #888898;
+    --accent: #00a844;
+    --accent2: #007a32;
+    --accent-dim: rgba(0,168,68,0.1);
+    --accent-glow: rgba(0,168,68,0.25);
+    --red: #d63050;
+    --yellow: #c49a00;
+    --blue: #1a70c8;
+    --card-bg: #ffffff;
+    --hero-grad: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,168,68,0.14) 0%, transparent 70%);
+    --orange: #f39c12;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 4rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(10,10,15,0.6);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+  [data-theme="light"] nav {
+    background: rgba(245,245,240,0.75);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-primary {
+    background: var(--accent);
+    border: none;
+    color: #050f09;
+    padding: 0.55rem 1.4rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  /* THEME TOGGLE */
+  .theme-toggle {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    color: var(--text2);
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 6rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hero-grad);
+    pointer-events: none;
+  }
+
+  /* Animated pitch lines */
+  .hero-pitch {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 420px;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  [data-theme="light"] .hero-pitch { opacity: 0.07; }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-dim);
+    border: 1px solid rgba(77,255,143,0.25);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  [data-theme="light"] .hero-eyebrow {
+    border-color: rgba(0,168,68,0.3);
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4.5rem, 12vw, 10rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+    position: relative;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--text2);
+    max-width: 540px;
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-hero {
+    padding: 0.9rem 2.2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-hero-green {
+    background: var(--accent);
+    color: #050f09;
+    border: none;
+    box-shadow: 0 0 40px var(--accent-glow);
+  }
+  .btn-hero-green:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 4px 50px var(--accent-glow); }
+
+  .btn-hero-outline {
+    background: none;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-hero-outline:hover { border-color: var(--text3); }
+
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 4.5rem;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+    font-weight: 500;
+  }
+
+  /* SECTION COMMONS */
+  section {
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .section-tag::before {
+    content: '';
+    display: block;
+    width: 20px; height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    letter-spacing: 0.03em;
+    line-height: 1.05;
+    margin-bottom: 1rem;
+  }
+
+  .section-body {
+    font-size: 1rem;
+    color: var(--text2);
+    font-weight: 300;
+    line-height: 1.75;
+    max-width: 520px;
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    padding: 8rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: start;
+    margin-top: 4rem;
+  }
+
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.8rem 0;
+    border-bottom: 1px solid var(--border);
+    cursor: default;
+    transition: all 0.2s;
+  }
+  .step:first-child { padding-top: 0; }
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.5rem;
+    color: var(--border);
+    line-height: 1;
+    min-width: 2rem;
+    transition: color 0.2s;
+  }
+  .step:hover .step-num { color: var(--accent); }
+
+  .step-content h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+  }
+  .step-content p {
+    font-size: 0.9rem;
+    color: var(--text2);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* VISUAL MOCKUP */
+  .mockup-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    position: sticky;
+    top: 6rem;
+  }
+  [data-theme="light"] .mockup-box {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  }
+
+  .mockup-bar {
+    background: var(--bg3);
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #28c840; }
+
+  .mockup-inner {
+    padding: 1.5rem;
+  }
+
+  .matchday-header {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-bottom: 1rem;
+  }
+
+  .teams-display {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.8rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .team-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  [data-theme="light"] .team-card { background: var(--bg2); }
+
+  .team-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .team-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .team-name-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: grab;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    user-select: none;
+    position: relative;
+  }
+  .player-row:last-child { border-bottom: none; }
+  .player-row:hover {
+    background: var(--accent-dim);
+    color: var(--text);
+  }
+  .player-row.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
+  .player-row.drag-over {
+    background: var(--accent-dim);
+    border: 1px dashed var(--accent);
+    transform: scale(1.02);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .drag-handle {
+    color: var(--text3);
+    font-size: 0.65rem;
+    margin-right: 0.3rem;
+    cursor: grab;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .player-row:hover .drag-handle { opacity: 1; color: var(--accent); }
+
+  .player-stars {
+    display: flex;
+    gap: 1px;
+    color: var(--yellow);
+    font-size: 0.55rem;
+  }
+
+  /* Swap hint tooltip */
+  .swap-hint {
+    font-size: 0.9rem;
+    color: var(--text3);
+    text-align: center;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Swap flash animation */
+  @keyframes swapFlash {
+    0% { background: var(--accent-dim); }
+    50% { background: rgba(77,255,143,0.25); }
+    100% { background: transparent; }
+  }
+  .player-row.swap-flash {
+    animation: swapFlash 0.4s ease;
+  }
+
+  /* Balance bar update animation */
+  @keyframes balanceUpdate {
+    0% { transform: scaleX(1); opacity: 1; }
+    30% { transform: scaleX(0.95); opacity: 0.7; }
+    100% { transform: scaleX(1); opacity: 1; }
+  }
+  .balance-fill.updating {
+    animation: balanceUpdate 0.4s ease;
+  }
+
+  .vs-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+  }
+
+  .balance-bar-wrap {
+    margin-top: 0.5rem;
+  }
+  .balance-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text3);
+    margin-bottom: 0.35rem;
+  }
+  .balance-bar {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .balance-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-radius: 4px;
+    width: 95%;
+  }
+  .balance-text {
+    font-size: 0.68rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 0.3rem;
+  }
+
+  .generate-btn-mock {
+    width: 100%;
+    background: var(--accent);
+    color: #050f09;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    cursor: default;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  /* FEATURES */
+  .features {
+    padding: 8rem 4rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .features-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .features-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    margin-bottom: 4rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .feat-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    transition: background 0.2s;
+  }
+  .feat-card:hover { background: var(--surface2); }
+
+  .feat-icon {
+    width: 44px; height: 44px;
+    background: var(--accent-dim);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .feat-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+  }
+
+  .feat-desc {
+    font-size: 0.87rem;
+    color: var(--text2);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* ALGORITHM */
+  .algorithm {
+    padding: 8rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .algo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: stretch;
+    margin-top: 4rem;
+  }
+
+  .algo-params {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .param-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .param-card:hover { border-color: var(--accent); transform: translateX(6px); }
+
+  .param-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .param-info h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+  }
+  .param-info p {
+    font-size: 0.8rem;
+    color: var(--text2);
+    font-weight: 300;
+  }
+
+  .param-weight {
+    margin-left: auto;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  /* ROLES */
+  .roles {
+    padding: 8rem 4rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .roles-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .roles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 3.5rem;
+  }
+
+  .role-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .role-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+
+  .role-card-director { border-top: 3px solid var(--accent); }
+  .role-card-member { border-top: 3px solid var(--blue); }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    margin-bottom: 1.2rem;
+  }
+  .badge-director { background: var(--accent-dim); color: var(--accent); }
+  .badge-member { background: rgba(77,159,255,0.12); color: var(--blue); }
+
+  .role-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.8rem;
+  }
+
+  .role-desc {
+    font-size: 0.9rem;
+    color: var(--text2);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .role-perms {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .role-perms li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.84rem;
+    color: var(--text2);
+    font-weight: 300;
+  }
+
+  .perm-check {
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
+  }
+  .perm-check-blue { color: var(--blue); }
+
+  /* MATCH FLOW */
+  .matchflow {
+    padding: 8rem 4rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 3.5rem;
+    overflow: visible;
+  }
+
+  .flow-step {
+    flex: 1;
+    position: relative;
+  }
+
+  .flow-node {
+    width: 64px; height: 64px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem;
+    transition: all 0.2s;
+  }
+  .flow-step:hover .flow-node { border-color: var(--accent); background: var(--accent-dim); }
+
+  .flow-node-active { border-color: var(--accent) !important; background: var(--accent-dim) !important; }
+
+  .flow-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .flow-arrow {
+    width: 40px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 10rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 70% at 50% 50%, var(--accent-dim), transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    letter-spacing: 0.03em;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-sub {
+    color: var(--text2);
+    font-weight: 300;
+    font-size: 1.1rem;
+    margin-bottom: 3rem;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 0.84rem;
+    color: var(--text3);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text); }
+
+  .footer-copy {
+    font-size: 0.8rem;
+    color: var(--text3);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .how-grid, .algo-grid, .features-intro, .roles-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .how, .features, .algorithm, .roles, .matchflow, .cta-section { padding: 5rem 1.5rem; }
+    .hero { padding: 7rem 1.5rem 5rem; }
+    .hero-stats { gap: 1.5rem; }
+    footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+    .flow-steps { flex-wrap: wrap; gap: 1.5rem; justify-content: center; }
+    .flow-arrow { display: none; }
+    .flow-step { flex: 0 0 calc(33% - 1rem); }
+  }
+
+  @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .hero-stats { flex-wrap: wrap; gap: 1.2rem; justify-content: center; }
+    .roles-grid { grid-template-columns: 1fr; }
+  }
+  /* adicionado agora */
+  .player-level {
+    display: flex;
+    gap: 2px;
+  }
+
+  .player-level .star {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--border);
+  }
+
+  .player-level .star.active {
+    background: var(--orange);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Ferino</a>
+  <ul class="nav-links">
+    <li><a href="#como-funciona">Como Funciona</a></li>
+    <li><a href="#funcionalidades">Funcionalidades</a></li>
+    <li><a href="#algoritmo">Algoritmo</a></li>
+    <li><a href="#papeis">Papéis</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="theme-toggle" id="themeToggle" title="Alternar tema">🌙</button>
+    <a href="#" class="btn-ghost">Entrar</a>
+    <a href="#" class="btn-primary">Criar Ferino</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <!-- Pitch SVG background -->
+<!--  <svg class="hero-pitch" viewBox="0 0 900 420" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+<!--    <rect x="1" y="1" width="898" height="418" stroke="currentColor" stroke-width="2"/>-->
+<!--    <line x1="449" y1="1" x2="449" y2="419" stroke="currentColor" stroke-width="2"/>-->
+<!--    <circle cx="449" cy="210" r="80" stroke="currentColor" stroke-width="2"/>-->
+<!--    <circle cx="449" cy="210" r="5" fill="currentColor"/>-->
+<!--    <rect x="1" y="125" width="100" height="170" stroke="currentColor" stroke-width="2"/>-->
+<!--    <rect x="799" y="125" width="100" height="170" stroke="currentColor" stroke-width="2"/>-->
+<!--    <rect x="1" y="165" width="40" height="90" stroke="currentColor" stroke-width="2"/>-->
+<!--    <rect x="860" y="165" width="40" height="90" stroke="currentColor" stroke-width="2"/>-->
+<!--    <circle cx="100" cy="210" r="30" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/>-->
+<!--    <circle cx="800" cy="210" r="30" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/>-->
+<!--  </svg>-->
+
+  <div class="hero-eyebrow">
+    <span>⚽</span> O futebol entre amigos, reinventado
+  </div>
+
+  <h1 class="hero-title">
+    ORGANIZE<br/>SEU <span>FERINO</span>
+  </h1>
+
+  <p class="hero-subtitle">
+    Chega de times desequilibrados e papéis perdidos. O Ferino monta os melhores times automaticamente, gerencia datas e registra a história do seu futebol com os amigos.
+  </p>
+
+  <div class="hero-ctas">
+    <a href="#" class="btn-hero btn-hero-green">⚽ Criar meu Ferino grátis</a>
+    <a href="#como-funciona" class="btn-hero btn-hero-outline">Como funciona →</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Níveis de Jogador</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Parâmetros de Equilíbrio</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Times Balanceados</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Partidas Registradas</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="como-funciona">
+  <div class="section-tag">Como Funciona</div>
+  <h2 class="section-title reveal">Do Cadastro ao Apito Final</h2>
+
+  <div class="how-grid">
+    <div class="step-list reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Crie seu Ferino</h3>
+          <p>Cadastre o grupo, defina os uniformes com cores e nomes. Você vira o Diretor automaticamente e tem controle total.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Cadastre os Integrantes</h3>
+          <p>Adicione cada jogador e atribua um nível de qualidade de 1 a 5. Esses dados são a base do algoritmo de equilíbrio.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Agende as Partidas</h3>
+          <p>Cadastre múltiplas datas de uma vez por dia da semana (toda quarta-feira, por exemplo) ou uma a uma do jeito que preferir.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <h3>Monte a Lista e Gere os Times</h3>
+          <p>No dia da partida, confirme os presentes, marque os goleiros — e deixa o Ferino montar os times equilibrados por você.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-content">
+          <h3>Registre o Resultado</h3>
+          <p>Ao final, defina o time campeão e o melhor jogador do dia. Tudo fica salvo no histórico do ferino.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mockup visual -->
+    <div class="reveal" style="animation-delay:0.15s">
+      <div class="mockup-box">
+        <div class="mockup-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <div class="mockup-inner">
+          <div class="matchday-header">⚽ QUARTA-FEIRA — 16/04/2025</div>
+
+          <div class="swap-hint">🔄 Arraste jogadores entre times para fazer swap</div>
+
+          <div class="teams-display" id="teamsDisplay">
+            <!-- Time Azul -->
+            <div class="team-card" id="teamBlue" data-team="blue"
+                 ondragover="handleDragOver(event)"
+                 ondrop="handleDrop(event, 'blue')"
+                 ondragleave="handleDragLeave(event)">
+              <div class="team-header">
+                <div class="team-dot" style="background:#1565C0"></div>
+                <div class="team-name-label">Time Azul</div>
+              </div>
+              <div id="playersBlue"></div>
+            </div>
+
+            <div class="vs-badge">VS</div>
+
+            <!-- Time Preto -->
+            <div class="team-card" id="teamBlack" data-team="black"
+                 ondragover="handleDragOver(event)"
+                 ondrop="handleDrop(event, 'black')"
+                 ondragleave="handleDragLeave(event)">
+              <div class="team-header">
+                <div class="team-dot" style="background:#555"></div>
+                <div class="team-name-label">Time Preto</div>
+              </div>
+              <div id="playersBlack"></div>
+            </div>
+          </div>
+
+          <div class="balance-bar-wrap">
+            <div class="balance-label">
+              <span>Equilíbrio dos times</span>
+              <span id="balanceScore">Time Azul 15pts · Time Preto 15pts</span>
+            </div>
+            <div class="balance-bar">
+              <div class="balance-fill" id="balanceFill"></div>
+            </div>
+            <div class="balance-text" id="balanceText">✓ Times 100% equilibrados</div>
+          </div>
+
+<!--          <button class="generate-btn-mock" onclick="regenerateTeams()">⚡ GERAR NOVOS TIMES</button>-->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="funcionalidades">
+  <div class="features-inner">
+    <div class="features-intro reveal">
+      <div>
+        <div class="section-tag">Funcionalidades</div>
+        <h2 class="section-title">Tudo que seu<br/>Ferino precisa</h2>
+      </div>
+      <p class="section-body">Cada detalhe foi pensado para o Diretor ter controle total sem burocracia — e os jogadores, apenas a diversão.</p>
+    </div>
+
+    <div class="features-grid reveal">
+      <div class="feat-card">
+        <div class="feat-icon">🏟️</div>
+        <div class="feat-title">Gestão de Clubes</div>
+        <p class="feat-desc">Crie seu ferino, defina uniformes com cores personalizadas e gerencie tudo em um único lugar.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">👥</div>
+        <div class="feat-title">Elenco Completo</div>
+        <p class="feat-desc">Cadastre jogadores com nível de 1 a 5. Histórico de títulos e prêmios atualizado automaticamente.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📅</div>
+        <div class="feat-title">Agenda Inteligente</div>
+        <p class="feat-desc">Programe todas as quartas (ou quintas, ou domingos) de uma vez. Alterações pontuais quando precisar.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Times Equilibrados</div>
+        <p class="feat-desc">Algoritmo que balanceia times considerando nível, títulos e prêmios de cada jogador.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔄</div>
+        <div class="feat-title">Swap de Jogadores</div>
+        <p class="feat-desc">Gerou mas quer trocar alguém de time? Faça swap manual e o placar de equilíbrio atualiza em tempo real.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🏆</div>
+        <div class="feat-title">Histórico & Rankings</div>
+        <p class="feat-desc">Registro de campeões, melhores jogadores e estatísticas de cada partida ao longo do tempo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALGORITHM -->
+<section class="algorithm" id="algoritmo">
+  <div class="section-tag">O Algoritmo</div>
+  <h2 class="section-title reveal">Times justos.<br/>Toda semana.</h2>
+
+  <div class="algo-grid">
+    <div class="reveal">
+      <p class="section-body" style="margin-bottom:2rem;">
+        O sistema considera três parâmetros para distribuir os jogadores de forma equilibrada. Quanto mais dados a temporada acumula, mais preciso o balanceamento fica.
+      </p>
+      <p class="section-body">
+        O Diretor pode ainda fazer <strong style="color:var(--text)">swap</strong> de jogadores entre times gerados — e o indicador de equilíbrio atualiza instantaneamente.
+      </p>
+    </div>
+
+    <div class="algo-params reveal" style="animation-delay:0.15s">
+      <div class="param-card">
+        <div class="param-icon">⭐</div>
+        <div class="param-info">
+          <h4>Nível do Jogador</h4>
+          <p>Avaliação de 1 a 5 definida pelo Diretor</p>
+        </div>
+        <div class="param-weight">Base</div>
+      </div>
+      <div class="param-card">
+        <div class="param-icon">🏆</div>
+        <div class="param-info">
+          <h4>Vezes Campeão</h4>
+          <p>Total de partidas vencidas pelo jogador</p>
+        </div>
+        <div class="param-weight">+Peso</div>
+      </div>
+      <div class="param-card">
+        <div class="param-icon">🌟</div>
+        <div class="param-info">
+          <h4>Melhor do Dia</h4>
+          <p>Prêmios recebidos por desempenho excepcional</p>
+        </div>
+        <div class="param-weight">+Peso</div>
+      </div>
+
+      <div style="background:var(--accent-dim);border:1px solid rgba(77,255,143,0.2);border-radius:12px;padding:1.2rem 1.5rem;margin-top:0.5rem">
+        <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem">Resultado</div>
+        <div style="font-size:0.9rem;color:var(--text2);font-weight:300;line-height:1.6">Diferença máxima de pontuação entre times minimizada. Times competitivos desde o primeiro apito.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section class="roles" id="papeis">
+  <div class="roles-inner">
+    <div class="section-tag reveal">Papéis</div>
+    <h2 class="section-title reveal">Diretor ou Integrante,<br/>cada um no seu lugar</h2>
+
+    <div class="roles-grid">
+      <div class="role-card role-card-director reveal">
+        <div class="role-badge badge-director">👑 Diretor</div>
+        <div class="role-title">Controle Total</div>
+        <p class="role-desc">Quem cria o ferino se torna Diretor automaticamente. Suas ações são restritas ao próprio ferino.</p>
+        <ul class="role-perms">
+          <li><span class="perm-check">▶</span> Cadastrar e gerenciar integrantes com nível de jogo</li>
+          <li><span class="perm-check">▶</span> Definir uniformes (cor e nome de cada time)</li>
+          <li><span class="perm-check">▶</span> Agendar múltiplas datas ou datas avulsas</li>
+          <li><span class="perm-check">▶</span> Criar lista de confirmados e designar goleiros</li>
+          <li><span class="perm-check">▶</span> Gerar times equilibrados com um clique</li>
+          <li><span class="perm-check">▶</span> Fazer swap de jogadores entre times</li>
+          <li><span class="perm-check">▶</span> Registrar campeão e melhor jogador do dia</li>
+        </ul>
+      </div>
+
+      <div class="role-card role-card-member reveal" style="animation-delay:0.15s">
+        <div class="role-badge badge-member">⚽ Integrante</div>
+        <div class="role-title">Só Jogar</div>
+        <p class="role-desc">O integrante existe dentro do ferino, carregando seu histórico de conquistas ao longo das temporadas.</p>
+        <ul class="role-perms">
+          <li><span class="perm-check perm-check-blue">▶</span> Perfil com nível de qualidade (1–5)</li>
+          <li><span class="perm-check perm-check-blue">▶</span> Histórico de títulos e prêmios acumulados</li>
+          <li><span class="perm-check perm-check-blue">▶</span> Aparece na lista de confirmados</li>
+          <li><span class="perm-check perm-check-blue">▶</span> Elegível para Melhor Jogador do Dia</li>
+          <li><span class="perm-check perm-check-blue">▶</span> Estatísticas atualizadas a cada partida</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MATCH FLOW -->
+<section class="matchflow">
+  <div class="section-tag" style="justify-content:center">Fluxo da Partida</div>
+  <h2 class="section-title reveal">Do agendamento ao resultado</h2>
+
+  <div class="flow-steps reveal">
+    <div class="flow-step">
+      <div class="flow-node">📅</div>
+      <div class="flow-label">Agenda<br/>a data</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-node">✅</div>
+      <div class="flow-label">Lista de<br/>confirmados</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-node">🧤</div>
+      <div class="flow-label">Define<br/>goleiros</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-node">⚡</div>
+      <div class="flow-label">Gera<br/>times</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-node">🔄</div>
+      <div class="flow-label">Swap<br/>manual</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-node">⚽</div>
+      <div class="flow-label">Partida<br/>acontece</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-node">🏆</div>
+      <div class="flow-label">Registra<br/>resultado</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 class="cta-title reveal">PRONTO PARA<br/>O <span style="color:var(--accent)">FERINO</span>?</h2>
+  <p class="cta-sub reveal">Crie o seu ferino gratuitamente, cadastre o elenco e já na próxima quarta-feira os times saem sozinhos.</p>
+  <div class="reveal" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <a href="#" class="btn-hero btn-hero-green">⚽ Criar meu Ferino grátis</a>
+    <a href="#" class="btn-hero btn-hero-outline">Ver uma demonstração</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Ferino</div>
+  <ul class="footer-links">
+    <li><a href="#">Como Funciona</a></li>
+    <li><a href="#">Funcionalidades</a></li>
+    <li><a href="#">Contato</a></li>
+    <li><a href="#">Privacidade</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 Ferino. Feito para os campos de quinta-feira.</div>
+</footer>
+
+<script>
+  // Theme toggle
+  const toggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+
+  function setTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('ferino-theme', theme);
+  }
+
+  // Load saved theme
+  const saved = localStorage.getItem('ferino-theme') || 'dark';
+  setTheme(saved);
+
+  toggle.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Nav background on scroll
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      nav.style.borderBottomColor = 'var(--border)';
+    }
+  });
+
+  // ── DRAG & DROP SWAP ───────────────────────────────────────────────────────
+
+  const allPlayers = [
+    { id: 'marcos',  name: 'Marcos (GK)', level: 4, team: 'blue'  },
+    { id: 'felipe',  name: 'Felipe',      level: 2, team: 'blue'  },
+    { id: 'lucas',   name: 'Lucas',       level: 5, team: 'blue'  },
+    { id: 'thiago',  name: 'Thiago',      level: 2, team: 'blue'  },
+    { id: 'rafael',  name: 'Rafael',      level: 2, team: 'blue'  },
+    { id: 'pedro',   name: 'Pedro (GK)',  level: 4, team: 'black' },
+    { id: 'andre',   name: 'André',       level: 4, team: 'black' },
+    { id: 'bruno',   name: 'Bruno',       level: 3, team: 'black' },
+    { id: 'carlos',  name: 'Carlos',      level: 3, team: 'black' },
+    { id: 'diego',   name: 'Diego',       level: 1, team: 'black' },
+  ];
+
+  let draggedId = null;
+
+  function starsHTML(level) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      html += `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${i <= level ? 'var(--orange)' : 'var(--border)'}"></span>`;
+    }
+    return `<span style="display:flex;gap:2px;align-items:center">${html}</span>`;
+  }
+
+  function renderTeams() {
+    const blue  = allPlayers.filter(p => p.team === 'blue');
+    const black = allPlayers.filter(p => p.team === 'black');
+
+    ['blue', 'black'].forEach(team => {
+      const container = document.getElementById(team === 'blue' ? 'playersBlue' : 'playersBlack');
+      const list = team === 'blue' ? blue : black;
+      container.innerHTML = list.map(p => `
+        <div class="player-row"
+             draggable="true"
+             data-id="${p.id}"
+             ondragstart="handleDragStart(event, '${p.id}')"
+             ondragend="handleDragEnd(event)"
+             ondragover="handleRowDragOver(event)"
+             ondragleave="handleRowDragLeave(event)"
+             ondrop="handleRowDrop(event, '${p.id}')">
+          <span style="display:flex;align-items:center;gap:0.3rem">
+            <span class="drag-handle">⠿</span>${p.name}
+          </span>
+          ${starsHTML(p.level)}
+        </div>
+      `).join('');
+    });
+
+    updateBalance();
+  }
+
+  function teamScore(team) {
+    return allPlayers.filter(p => p.team === team).reduce((s, p) => s + p.level, 0);
+  }
+
+  function updateBalance() {
+    const blue  = teamScore('blue');
+    const black = teamScore('black');
+    const total = blue + black;
+    const diff  = Math.abs(blue - black);
+    const pct   = Math.round(100 - (diff / total) * 100);
+    const fillPct = Math.max(30, pct);
+
+    const fill = document.getElementById('balanceFill');
+    const text = document.getElementById('balanceText');
+    const score = document.getElementById('balanceScore');
+
+    fill.style.width = fillPct + '%';
+    fill.classList.remove('updating');
+    void fill.offsetWidth; // reflow
+    fill.classList.add('updating');
+
+    score.textContent = `Time Azul ${blue}pts · Time Preto ${black}pts`;
+
+    if (diff === 0) {
+      fill.style.background = 'linear-gradient(90deg, var(--accent), var(--blue))';
+      text.style.color = 'var(--accent)';
+      text.textContent = '✓ Times 100% equilibrados';
+    } else if (diff <= 2) {
+      fill.style.background = 'linear-gradient(90deg, var(--yellow), var(--accent))';
+      text.style.color = 'var(--yellow)';
+      text.textContent = `⚡ Diferença de ${diff}pt${diff > 1 ? 's' : ''} — quase perfeito`;
+    } else {
+      fill.style.background = 'linear-gradient(90deg, var(--red), var(--yellow))';
+      text.style.color = 'var(--red)';
+      text.textContent = `⚠ Desequilíbrio de ${diff}pts — considere fazer swap`;
+    }
+  }
+
+  function handleDragStart(e, id) {
+    draggedId = id;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => e.target.classList.add('dragging'), 0);
+  }
+
+  function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    draggedId = null;
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.style.outline = '1px dashed var(--accent)';
+    e.currentTarget.style.borderRadius = '10px';
+  }
+
+  function handleDragLeave(e) {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      e.currentTarget.style.outline = '';
+    }
+  }
+
+  function handleRowDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.add('drag-over');
+  }
+
+  function handleRowDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+
+  function isGK(player) { return player.name.includes('GK'); }
+
+  function showInvalidSwapFeedback(id) {
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if (!el) return;
+    el.style.transition = 'background 0.1s';
+    el.style.background = 'rgba(255,77,106,0.2)';
+    el.style.border = '1px solid var(--red)';
+    setTimeout(() => { el.style.background = ''; el.style.border = ''; }, 500);
+    // Shake the balance text as feedback
+    const txt = document.getElementById('balanceText');
+    const prev = txt.textContent;
+    const prevColor = txt.style.color;
+    txt.textContent = '🧤 Goleiros só trocam com goleiros';
+    txt.style.color = 'var(--red)';
+    setTimeout(() => { txt.textContent = prev; txt.style.color = prevColor; }, 1800);
+  }
+
+  function handleRowDrop(e, targetId) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    if (!draggedId || draggedId === targetId) return;
+
+    const dragged = allPlayers.find(p => p.id === draggedId);
+    const target  = allPlayers.find(p => p.id === targetId);
+    if (!dragged || !target) return;
+
+    // GK rule: must swap with same type
+    if (isGK(dragged) !== isGK(target)) {
+      showInvalidSwapFeedback(draggedId);
+      return;
+    }
+
+    swapPlayers(draggedId, targetId);
+  }
+
+  function handleDrop(e, targetTeam) {
+    e.preventDefault();
+    e.currentTarget.style.outline = '';
+    if (!draggedId) return;
+
+    const player = allPlayers.find(p => p.id === draggedId);
+    if (!player || player.team === targetTeam) return;
+
+    // Find matching type on target team
+    const targets = allPlayers.filter(p => p.team === targetTeam && isGK(p) === isGK(player));
+    if (!targets.length) { showInvalidSwapFeedback(draggedId); return; }
+
+    swapPlayers(player.id, targets[0].id);
+  }
+
+  function swapPlayers(idA, idB) {
+    const idxA = allPlayers.findIndex(p => p.id === idA);
+    const idxB = allPlayers.findIndex(p => p.id === idB);
+    if (idxA === -1 || idxB === -1) return;
+    if (allPlayers[idxA].team === allPlayers[idxB].team) return;
+    // Swap the full objects so each occupies the other's index (position)
+    // then restore the original teams so each player joins the other's team
+    const teamA = allPlayers[idxA].team;
+    const teamB = allPlayers[idxB].team;
+    [allPlayers[idxA], allPlayers[idxB]] = [allPlayers[idxB], allPlayers[idxA]];
+    allPlayers[idxA].team = teamA;
+    allPlayers[idxB].team = teamB;
+    renderTeams();
+    // Flash swapped rows
+    setTimeout(() => {
+      [idA, idB].forEach(id => {
+        const el = document.querySelector(`[data-id="${id}"]`);
+        if (el) { el.classList.add('swap-flash'); setTimeout(() => el.classList.remove('swap-flash'), 400); }
+      });
+    }, 50);
+  }
+
+  function regenerateTeams() {
+    // Shuffle non-GK players between teams keeping GKs
+    const gks = allPlayers.filter(p => p.name.includes('GK'));
+    const field = allPlayers.filter(p => !p.name.includes('GK'));
+    // Shuffle field players
+    for (let i = field.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [field[i].team, field[j].team] = [field[j].team, field[i].team];
+    }
+    renderTeams();
+  }
+
+  
+  function atualizeDateHeader() {
+    const now = new Date();
+    const locale = navigator.language || navigator.userLanguage;
+
+  // 1. Formata o dia da semana (ex: QUARTA-FEIRA)
+    const weekDay = now.toLocaleDateString(locale, { weekday: 'long' }).toUpperCase();
+
+  // 2. Formata a data numérica (ex: 16/04/2025)
+    const numDate = now.toLocaleDateString();
+
+  // 3. Monta a string final
+    const headerText = `⚽ ${weekDay} — ${numDate}`;
+
+  // 4. Insere no elemento HTML
+    const element = document.querySelector('.matchday-header');
+    if (element) {
+      element.textContent = headerText;
+    }
+  }
+
+  
+  // Init
+  atualizeDateHeader()
+  renderTeams();
+</script>
+
+</body>
+</html>

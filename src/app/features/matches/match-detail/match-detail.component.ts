@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {MatchesService} from '@core/services/matches.service';
@@ -15,7 +15,9 @@ import {
 import {PageHeaderComponent} from '@shared/components/page-header/page-header.component';
 import {LoadingSpinnerComponent} from '@shared/components/loading-spinner/loading-spinner.component';
 import {ConfirmDialogComponent} from '@shared/components/confirm-dialog/confirm-dialog.component';
-import {MatchDatePipe, MatchPositionPipe} from '@shared/pipes/app.pipes';
+import {TeamCardComponent} from '@shared/components/team-card/team-card.component';
+import {MatchDatePipe} from '@shared/pipes/app.pipes';
+import {PlayerUiModel, TeamUiModel} from '@core/models/team-ui.model';
 import {forkJoin} from 'rxjs';
 import {TeamsService} from "@core/services/teams.service";
 
@@ -25,7 +27,7 @@ import {TeamsService} from "@core/services/teams.service";
   imports: [
     CommonModule, RouterModule,
     PageHeaderComponent, LoadingSpinnerComponent, ConfirmDialogComponent,
-    MatchDatePipe, MatchPositionPipe,
+    TeamCardComponent, MatchDatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -64,63 +66,34 @@ import {TeamsService} from "@core/services/teams.service";
           </span>
         </div>
       </div>
-
-      <!-- Participants section -->
-<!--      <div class="section-card">-->
-<!--        <div class="section-head">-->
-<!--          <h2>Participantes <span class="count">{{ participants().length }}</span></h2>-->
-<!--          <p class="section-hint">Selecione os membros que participarão desta partida para gerar os times.</p>-->
-<!--        </div>-->
-
-<!--        @if (loadingMembers()) {-->
-<!--          <app-loading-spinner [size]="24" />-->
-<!--        } @else if (clubMembers().length === 0) {-->
-<!--          <div class="empty-msg">Nenhum membro no clube. <a [routerLink]="['/clubs', match()!.clubId]">Adicionar membros →</a></div>-->
-<!--        } @else {-->
-<!--          <div class="member-selector">-->
-<!--            @for (member of clubMembers(); track member.id) {-->
-<!--              <div-->
-<!--                class="member-chip"-->
-<!--                [class.selected]="isSelected(member.id)"-->
-<!--                (click)="toggleMember(member)">-->
-<!--                <div class="chip-avatar">{{ member.name[0].toUpperCase() }}</div>-->
-<!--                <div class="chip-info">-->
-<!--                  <span class="chip-name">{{ member.name }}</span>-->
-<!--                  <span class="chip-pos">{{ getPosition(member.id) | matchPosition }}</span>-->
-<!--                </div>-->
-<!--                @if (isSelected(member.id)) {-->
-<!--                  <span class="chip-check">✓</span>-->
-<!--                }-->
-<!--              </div>-->
-<!--            }-->
-<!--          </div>-->
-
-<!--          <div class="selection-summary">-->
-<!--            <span>{{ selectedIds().size }} selecionados</span>-->
-<!--            <button class="btn-outline-sm" (click)="selectAll()">Todos</button>-->
-<!--            <button class="btn-outline-sm" (click)="clearAll()">Limpar</button>-->
-<!--          </div>-->
-<!--        }-->
-<!--      </div>-->
-
+      
       <!-- Teams section -->
       @if (teams().length > 0) {
         <div class="section-card">
           <div class="section-head">
             <h2>Times Gerados <span class="count">{{ teams().length }}</span></h2>
+            <p class="section-hint">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
           </div>
-          @for (team of teams(); track team.id) {
-            <div class="team-card">
-              <h3>{{ getJerseyName(team.clubJerseyId) }}</h3>
-              <div class="team-players">
-                @for (player of getTeamPlayers(team.id); track player.id) {
-                  <div class="player-chip">
-                    {{ getMemberName(player.clubMemberId) }} ({{ player.position | matchPosition }})
-                  </div>
-                }
-              </div>
-            </div>
-          }
+          <div class="teams-grid">
+            @if (freeGoalkeepersCard()) {
+              <app-team-card
+                [team]="freeGoalkeepersCard()!"
+                [enableSwap]="!swapping()"
+                [dropListId]="dropListId(freeGoalkeepersCard()!.id)"
+                [connectedDropLists]="teamDropListIds()"
+                (swapRequested)="swapMatchPlayers($event)" />
+            }
+
+            @for (team of teamCards(); track team.id) {
+              <app-team-card
+                [team]="team"
+                [enableSwap]="!swapping()"
+                [dropListId]="dropListId(team.id)"
+                [connectedDropLists]="teamDropListIds()"
+                (swapRequested)="swapMatchPlayers($event)" />
+            }
+            
+          </div>
         </div>
       } @else {
         <div class="section-card">
@@ -250,11 +223,11 @@ import {TeamsService} from "@core/services/teams.service";
       a { color: var(--accent); &:hover { text-decoration: underline; } }
     }
 
-    /* Team styles */
-    .team-card { margin-bottom: 1rem; }
-    .team-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .team-players { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .player-chip { background: var(--surface); padding: 0.4rem 0.6rem; border-radius: 6px; font-size: 0.75rem; border: 1px solid var(--border); }
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
   `],
 })
 export class MatchDetailComponent implements OnInit {
@@ -267,6 +240,7 @@ export class MatchDetailComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly loadingMembers = signal(true);
+  readonly swapping = signal(false);
   readonly match = signal<MatchResponseDTO | null>(null);
   readonly participants = signal<MatchParticipantResponseDTO[]>([]);
   readonly clubMembers = signal<ClubMemberResponseDTO[]>([]);
@@ -277,6 +251,34 @@ export class MatchDetailComponent implements OnInit {
 
   clubName = () => this.club()?.name ?? '';
   isUpcoming = () => this.match() ? new Date(this.match()!.dateTime) > new Date() : false;
+  readonly teamCards = computed<TeamUiModel[]>(() =>
+    this.teams().map((team, index) => this.toTeamCardModel(team, index))
+  );
+  readonly teamDropListIds = computed(() => {
+    const ids = this.teamCards().map((team) => this.dropListId(team.id));
+    const free = this.freeGoalkeepersCard?.();
+    if (free) ids.push(this.dropListId(free.id));
+    return ids;
+  });
+
+  // Card that contains goalkeepers not assigned to any team
+  readonly freeGoalkeepersCard = computed<TeamUiModel | null>(() => {
+    const gks = this.participants()
+      .filter((p) => p.position === 'GOAL' && (p.teamId === null || p.teamId === undefined))
+      .map((p) => this.toPlayerModel(p, null));
+
+    if (gks.length === 0) return null;
+
+    const jersey = this.jerseys().find((j) => j.isGoalkeeperJersey);
+
+    return {
+      id: 0,
+      jerseyName: jersey?.name ?? 'Goleiros',
+      jerseyColor: jersey?.hexColor ?? this.fallbackTeamColor(this.teams().length),
+      players: gks,
+      goalkeeper: null,
+    };
+  });
 
   ngOnInit(): void {
     const matchId = this.route.snapshot.paramMap.get('id')!;
@@ -356,6 +358,82 @@ export class MatchDetailComponent implements OnInit {
 
   getJerseyName(jerseyId: number): string {
     return this.jerseys().find(j => j.id === jerseyId)?.name ?? 'Unknown Jersey';
+  }
+
+  swapMatchPlayers(event: { from: PlayerUiModel; to: PlayerUiModel }): void {
+    const matchId = this.match()?.id;
+    if (!matchId || this.swapping() || event.from.position !== event.to.position) return;
+
+    this.swapping.set(true);
+    this.teamsService.swapPlayers({
+      matchId,
+      swaps: [{ memberIdFrom: event.from.id, memberIdTo: event.to.id }],
+    }).subscribe({
+      next: () => {
+        this.participants.update((participants) =>
+          participants.map((participant) => {
+            if (participant.clubMemberId === event.from.id) {
+              return { ...participant, teamId: event.to.teamId ?? undefined };
+            }
+            if (participant.clubMemberId === event.to.id) {
+              return { ...participant, teamId: event.from.teamId ?? undefined };
+            }
+            return participant;
+          })
+        );
+        this.swapping.set(false);
+        this.toast.success('Jogadores trocados.');
+      },
+      error: (err) => {
+        this.swapping.set(false);
+        this.toast.error(err.error?.detail ?? 'Erro ao trocar jogadores.');
+      },
+    });
+  }
+
+  dropListId(teamId: number): string {
+    return `match-team-${teamId}`;
+  }
+
+  private toTeamCardModel(team: TeamResponseDTO, index: number): TeamUiModel {
+    const jersey = this.resolveJersey(team.clubJerseyId, index);
+    const teamParticipants = this.participants().filter((participant) => participant.teamId === team.id);
+    const linePlayers = teamParticipants
+      .filter((participant) => participant.position === 'LINE')
+      .map((participant) => this.toPlayerModel(participant, team.id));
+    const goalkeeper = teamParticipants.find((participant) => participant.position === 'GOAL');
+
+    return {
+      id: team.id,
+      jerseyName: jersey?.name ?? `Time ${index + 1}`,
+      jerseyColor: jersey?.hexColor ?? this.fallbackTeamColor(index),
+      players: linePlayers,
+      goalkeeper: goalkeeper ? this.toPlayerModel(goalkeeper, team.id) : null,
+    };
+  }
+
+  private toPlayerModel(participant: MatchParticipantResponseDTO, teamId: number | null): PlayerUiModel {
+    const member = this.clubMembers().find((item) => item.id === participant.clubMemberId);
+
+    return {
+      id: participant.clubMemberId,
+      name: member?.name ?? `Jogador #${participant.clubMemberId}`,
+      rating: member?.rating ?? 0,
+      timesChampion: member?.timesChampion ?? 0,
+      timesMvp: member?.timesMvp ?? 0,
+      position: participant.position,
+      teamId,
+      isGoalkeeper: participant.position === 'GOAL',
+    };
+  }
+
+  private resolveJersey(jerseyId: number | null | undefined, index: number): ClubJerseyResponseDTO | undefined {
+    return this.jerseys().find((jersey) => jersey.id === jerseyId) ?? this.jerseys().filter((j) => !j.isGoalkeeperJersey)[index];
+  }
+
+  private fallbackTeamColor(index: number): string {
+    const colors = ['#1565c0', '#555555', '#00a844', '#d63050', '#f39c12', '#7c4dff'];
+    return colors[index % colors.length];
   }
 
   deleteMatch(): void {

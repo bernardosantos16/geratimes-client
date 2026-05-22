@@ -1,9 +1,9 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, ReplaySubject, tap, catchError, of } from 'rxjs';
 import {
-  LoginRequestDTO, LogoutRequestDTO,
+  LoginRequestDTO,
   TokenResponseDTO,
   UserResponseDTO,
 } from '../models/api.models';
@@ -12,10 +12,11 @@ import { environment } from '../../../environments/environment';
 interface AuthState {
   accessToken: string | null;
   user: UserResponseDTO | null;
-  expiresAt: number | null;
 }
 
-const STORAGE_KEY = 'ferino_auth';
+// Só o usuário vai para storage — token fica em memória
+const STORAGE_KEY = 'ferino_user';
+const TOKEN_EXPIRY_SKEW_MS = 10_000;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -23,13 +24,17 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly baseUrl = `${environment.apiUrl}/api/auth`;
 
-  // ── Signals ──────────────────────────────────────────────────────────────
+  // ── Estado de refresh (usado pelo interceptor) ────────────────────────────
+  isRefreshing = false;
+  logoutStarted = false;
+  refreshTokenSubject = new ReplaySubject<string>(1);
+
+  // ── Signals ───────────────────────────────────────────────────────────────
   private readonly _state = signal<AuthState>(this.loadFromStorage());
 
   readonly isAuthenticated = computed(() => {
-    const state = this._state();
-    if (!state.accessToken || !state.expiresAt) return false;
-    return Date.now() < state.expiresAt;
+    const token = this._state().accessToken;
+    return !!token && !this.isTokenExpired(token);
   });
 
   readonly currentUser = computed(() => this._state().user);
@@ -37,28 +42,24 @@ export class AuthService {
 
   // ── Public API ────────────────────────────────────────────────────────────
   login(dto: LoginRequestDTO): Observable<TokenResponseDTO> {
-    return this.http.post<TokenResponseDTO>(`${this.baseUrl}/login`, dto).pipe(
-      tap((res) => this.persistSession(res)),
-      catchError((err) => throwError(() => err))
-    );
+    return this.http
+        .post<TokenResponseDTO>(`${this.baseUrl}/login`, dto, { withCredentials: true })
+        .pipe(tap((res) => this.persistSession(res)));
   }
 
   logout(): Observable<void> {
-    const refreshToken = this.getRefreshToken();
-    const dto: LogoutRequestDTO = { refreshToken: refreshToken ?? '' };
-
-    return this.http.post<void>(`${this.baseUrl}/logout`, dto).pipe(
-      tap(() => this.clearSession()),
-      catchError(() => {
-        this.clearSession();
-        return throwError(() => new Error('Logout failed'));
-      })
-    );
+    return this.http
+        .post<void>(`${this.baseUrl}/logout`, null, { withCredentials: true })
+        .pipe(
+            catchError(() => of(void 0)),
+            tap(() => this.clearSession())
+        );
   }
 
-  refresh(): Observable<TokenResponseDTO> {
+  refreshToken(): Observable<TokenResponseDTO> {
     return this.http
-      .post<TokenResponseDTO>(`${this.baseUrl}/refresh`, {})
+        .post<TokenResponseDTO>(`${this.baseUrl}/refresh`, null, { withCredentials: true })
+        .pipe(tap((res) => this.persistSession(res)));
   }
 
   setUser(user: UserResponseDTO): void {
@@ -66,40 +67,53 @@ export class AuthService {
     this.saveToStorage();
   }
 
+  isTokenExpired(token: string): boolean {
+    const expiresAt = this.getTokenExpirationMs(token);
+    if (!expiresAt) return true;
+    return Date.now() >= expiresAt - TOKEN_EXPIRY_SKEW_MS;
+  }
+
   // ── Private ───────────────────────────────────────────────────────────────
-  private persistSession(token: TokenResponseDTO): void {
-    const expiresAt = Date.now() + token.expiresInSeconds * 1000;
-    this._state.set({
-      accessToken: token.accessToken,
-      user: this._state().user,
-      expiresAt,
-    });
-    this.saveToStorage();
+  private persistSession(res: TokenResponseDTO): void {
+    this._state.update((s) => ({ ...s, accessToken: res.accessToken }));
+    // Não salva o token — só o usuário persiste no storage
   }
 
   private clearSession(): void {
-    this._state.set({ accessToken: null, user: null, expiresAt: null });
+    this._state.set({ accessToken: null, user: null });
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('ferino_refresh');
     this.router.navigate(['/auth/login']);
   }
 
   private saveToStorage(): void {
-    const state = this._state();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const user = this._state().user;
+    // Salva só o usuário, nunca o token
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ user }));
   }
 
   private loadFromStorage(): AuthState {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { accessToken: null, user: null, expiresAt: null };
-      return JSON.parse(raw) as AuthState;
+      if (!raw) return { accessToken: null, user: null };
+      const parsed = JSON.parse(raw) as { user?: UserResponseDTO };
+      return { accessToken: null, user: parsed.user ?? null };
     } catch {
-      return { accessToken: null, user: null, expiresAt: null };
+      return { accessToken: null, user: null };
     }
   }
 
-  private getRefreshToken(): string | null {
-    return localStorage.getItem('ferino_refresh');
+  private getTokenExpirationMs(token: string): number | null {
+    try {
+      const [, payload] = token.split('.');
+      if (!payload) return null;
+      const normalized = payload
+          .replace(/-/g, '+')
+          .replace(/_/g, '/')
+          .padEnd(Math.ceil(payload.length / 4) * 4, '=');
+      const claims = JSON.parse(atob(normalized)) as { exp?: number };
+      return typeof claims.exp === 'number' ? claims.exp * 1000 : null;
+    } catch {
+      return null;
+    }
   }
 }

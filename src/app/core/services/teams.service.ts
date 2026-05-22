@@ -33,11 +33,11 @@ export class TeamsService {
     return this.http.patch<TeamResponseDTO>(`${this.baseUrl}/${id}/jersey`, dto);
   }
 
-  generateTeams(dto: GenerateTeamsRequestDTO): Observable<GenerateTeamsResponseDTO> {
-    return this.http.post<GenerateTeamsResponseDTO>(`${this.baseUrl}/generate`, dto);
+  generateTeams(payload: GenerateTeamsRequestDTO): Observable<GenerateTeamsResponseDTO> {
+    return this.http.post<GenerateTeamsResponseDTO>(`${this.baseUrl}/generate`, payload);
   }
 
-  swapPlayers(dto: SwapPlayersRequestDTO): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/swap`, dto);
+  swapPlayers(payload: SwapPlayersRequestDTO): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/swap`, payload);
   }
 }

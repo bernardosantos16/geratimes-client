@@ -21,7 +21,7 @@ import { DatePipe } from '@angular/common';
       <div class="greeting">
         <div class="greeting-text">
           <span class="eyebrow">Bem-vindo de volta</span>
-          <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span> 👋</h1>
+          <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span></h1>
           <p>Organize suas partidas e times com facilidade.</p>
         </div>
         <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>
@@ -281,7 +281,6 @@ export class DashboardComponent implements OnInit {
   readonly upcomingMatchesList = signal<MatchResponseDTO[]>([]);
 
   ngOnInit(): void {
-    console.log(this.auth.accessToken());
     forkJoin({
       ownerClubs: this.clubsService.getClubs('DIRECTOR'),
       memberClubs: this.clubsService.getClubs('MEMBER'),
