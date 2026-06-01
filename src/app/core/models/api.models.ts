@@ -112,9 +112,16 @@ export interface MatchResponseDTO {
   id: string;         // uuid
   clubId: string;     // uuid
   dateTime: string;   // ISO date-time
+  teamChampionId?: number | null;
+  clubMemberMvpId?: number | null;
 }
 
 export interface PageMatchResponseDTO extends PageDTO<MatchResponseDTO> {}
+
+export interface SetMatchResultRequestDTO {
+  teamChampionId: number;
+  clubMemberMvpId: number;
+}
 
 // --------------- MATCH PARTICIPANTS ---------------
 export type MatchPosition = 'LINE' | 'GOAL';
@@ -218,3 +225,4 @@ export interface ApiError {
 }
 
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+

@@ -2,9 +2,9 @@ import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@ang
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { MatchesService } from '../../../core/services/matches.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
+import { MatchesService } from '@core/services/matches.service';
+import { ToastService } from '@core/services/toast.service';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-match-form',

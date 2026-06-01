@@ -63,7 +63,7 @@ export class ClubsService {
     memberId: number,
     dto: UpdateClubMemberRequestDTO
   ): Observable<ClubMemberResponseDTO> {
-    return this.http.put<ClubMemberResponseDTO>(
+    return this.http.patch<ClubMemberResponseDTO>(
       `${this.baseUrl}/${clubId}/members/${memberId}`,
       dto
     );

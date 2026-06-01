@@ -11,7 +11,8 @@ import { RouterModule } from '@angular/router';
     <header class="page-header">
       <div class="header-left">
         @if (backLink) {
-          <a [routerLink]="backLink" class="back-btn" [attr.aria-label]="'Voltar'">
+
+          <a class="back-btn" (click)="history.back()" [attr.aria-label]="'Voltar'">
             ←
           </a>
         }
@@ -60,8 +61,10 @@ import { RouterModule } from '@angular/router';
       text-decoration: none;
       transition: all 0.2s;
       flex-shrink: 0;
+      
 
       &:hover {
+        cursor: pointer;
         border-color: var(--accent);
         color: var(--accent);
       }
@@ -108,4 +111,5 @@ export class PageHeaderComponent {
   @Input() subtitle = '';
   @Input() eyebrow = '';
   @Input() backLink: string | null = null;
+  protected readonly history = history;
 }

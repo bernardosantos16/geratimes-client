@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {MatchesService} from '@core/services/matches.service';
 import {ClubsService} from '@core/services/clubs.service';
@@ -25,7 +26,7 @@ import {TeamsService} from "@core/services/teams.service";
   selector: 'app-match-detail',
   standalone: true,
   imports: [
-    CommonModule, RouterModule,
+    CommonModule, FormsModule, RouterModule,
     PageHeaderComponent, LoadingSpinnerComponent, ConfirmDialogComponent,
     TeamCardComponent, MatchDatePipe,
   ],
@@ -66,6 +67,81 @@ import {TeamsService} from "@core/services/teams.service";
           </span>
         </div>
       </div>
+
+      @if (!isUpcoming()) {
+        <div class="section-card result-card">
+          <div class="section-head result-head">
+            <div>
+              <h2>Resultado da Partida</h2>
+              <p class="section-hint">Defina o time campeão e o MVP entre os participantes.</p>
+            </div>
+            @if (hasResult()) {
+              <span class="result-badge">Definido</span>
+            } @else {
+              <span class="result-badge pending">Pendente</span>
+            }
+          </div>
+
+          @if (teams().length === 0) {
+            <div class="empty-msg">Gere os times antes de definir o resultado.</div>
+          } @else {
+            @if (hasResult()) {
+              <div class="result-summary">
+                <div class="result-item">
+                  <span class="result-label">Campeão</span>
+                  <span class="result-value">{{ championTeamName() }}</span>
+                </div>
+                <div class="result-item">
+                  <span class="result-label">MVP</span>
+                  <span class="result-value">{{ mvpMemberName() }}</span>
+                </div>
+              </div>
+            }
+
+            @if (canManageResult()) {
+              <div class="result-form">
+                <label class="form-field">
+                  <span>Time campeão</span>
+                  <select
+                    class="form-select"
+                    name="teamChampionId"
+                    [ngModel]="championTeamId()"
+                    (ngModelChange)="setChampionTeamId($event)"
+                    [disabled]="savingResult()">
+                    <option [ngValue]="null" disabled>Selecione o time campeão</option>
+                    @for (team of teamCards(); track team.id) {
+                      <option [ngValue]="team.id">{{ team.jerseyName }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label class="form-field">
+                  <span>MVP</span>
+                  <select
+                    class="form-select"
+                    name="clubMemberMvpId"
+                    [ngModel]="mvpMemberId()"
+                    (ngModelChange)="setMvpMemberId($event)"
+                    [disabled]="savingResult()">
+                    <option [ngValue]="null" disabled>Selecione o MVP</option>
+                    @for (player of mvpCandidates(); track player.id) {
+                      <option [ngValue]="player.id">
+                        {{ player.name }} - {{ player.position === 'GOAL' ? 'Goleiro' : 'Linha' }}
+                      </option>
+                    }
+                  </select>
+                </label>
+
+                <button class="btn-primary result-submit" type="button" [disabled]="!canSaveResult()" (click)="saveResult()">
+                  {{ savingResult() ? 'Salvando...' : 'Salvar resultado' }}
+                </button>
+              </div>
+            } @else if (!hasResult()) {
+              <div class="empty-msg">Resultado ainda não definido.</div>
+            }
+          }
+        </div>
+      }
       
       <!-- Teams section -->
       @if (teams().length > 0) {
@@ -169,6 +245,67 @@ import {TeamsService} from "@core/services/teams.service";
 
     .section-hint { font-size: 0.82rem; color: var(--text2); }
 
+    .result-card { margin-bottom: 1.5rem; }
+
+    .result-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap;
+    }
+
+    .result-badge {
+      background: var(--accent-dim); color: var(--accent);
+      border: 1px solid rgba(77,255,143,0.3);
+      padding: 0.25rem 0.65rem; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    }
+
+    .result-badge.pending {
+      background: var(--surface2); color: var(--text3); border-color: var(--border);
+    }
+
+    .result-summary {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem; margin-bottom: 1rem;
+      @media (max-width: 640px) { grid-template-columns: 1fr; }
+    }
+
+    .result-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.85rem 1rem;
+      display: flex; flex-direction: column; gap: 0.25rem;
+    }
+
+    .result-label {
+      font-size: 0.72rem; color: var(--text3); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .result-value { font-size: 0.95rem; color: var(--text); font-weight: 700; }
+
+    .result-form {
+      display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.2fr) auto;
+      gap: 0.75rem; align-items: end;
+      @media (max-width: 820px) { grid-template-columns: 1fr; }
+    }
+
+    .form-field {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      span { font-size: 0.78rem; color: var(--text2); font-weight: 700; }
+    }
+
+    .form-select {
+      width: 100%; background: var(--input-bg); border: 1px solid var(--input-border);
+      border-radius: 8px; color: var(--text); padding: 0.58rem 0.75rem;
+      font-family: 'DM Sans', sans-serif; font-size: 0.88rem; outline: none;
+      &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+
+    .result-submit {
+      height: 2.35rem; justify-content: center; white-space: nowrap;
+      &:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+    }
+
     /* Member selector */
     .member-selector {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -247,13 +384,41 @@ export class MatchDetailComponent implements OnInit {
   readonly selectedIds = signal<Set<number>>(new Set());
   readonly teams = signal<TeamResponseDTO[]>([]);
   readonly jerseys = signal<ClubJerseyResponseDTO[]>([]);
+  readonly canManageResult = signal(false);
+  readonly savingResult = signal(false);
+  readonly championTeamId = signal<number | null>(null);
+  readonly mvpMemberId = signal<number | null>(null);
   private club = signal<ClubResponseDTO | null>(null);
 
   clubName = () => this.club()?.name ?? '';
   isUpcoming = () => this.match() ? new Date(this.match()!.dateTime) > new Date() : false;
+  readonly hasResult = computed(() => {
+    const match = this.match();
+    return !!match?.teamChampionId && !!match?.clubMemberMvpId;
+  });
+  readonly championTeamName = computed(() => {
+    const teamId = this.match()?.teamChampionId;
+    if (!teamId) return '';
+    return this.teamCards().find((team) => team.id === teamId)?.jerseyName ?? `Time #${teamId}`;
+  });
+  readonly mvpMemberName = computed(() => {
+    const memberId = this.match()?.clubMemberMvpId;
+    if (!memberId) return '';
+    return this.getMemberName(memberId);
+  });
   readonly teamCards = computed<TeamUiModel[]>(() =>
     this.teams().map((team, index) => this.toTeamCardModel(team, index))
   );
+  readonly mvpCandidates = computed<PlayerUiModel[]>(() => {
+    const seen = new Set<number>();
+    return this.participants()
+      .filter((participant) => {
+        if (seen.has(participant.clubMemberId)) return false;
+        seen.add(participant.clubMemberId);
+        return true;
+      })
+      .map((participant) => this.toPlayerModel(participant, participant.teamId ?? null));
+  });
   readonly teamDropListIds = computed(() => {
     const ids = this.teamCards().map((team) => this.dropListId(team.id));
     const free = this.freeGoalkeepersCard?.();
@@ -287,11 +452,15 @@ export class MatchDetailComponent implements OnInit {
       match: this.matchesService.getMatch(matchId),
       participants: this.matchesService.getParticipants(matchId),
       teams: this.teamsService.getTeamsByMatch(matchId),
+      directorClubs: this.clubsService.getClubs('DIRECTOR'),
     }).subscribe({
-      next: ({ match, participants, teams }) => {
+      next: ({ match, participants, teams, directorClubs }) => {
         this.match.set(match);
         this.participants.set(participants);
         this.teams.set(teams.content);
+        this.canManageResult.set(directorClubs.some((club) => club.id === match.clubId));
+        this.championTeamId.set(match.teamChampionId ?? null);
+        this.mvpMemberId.set(match.clubMemberMvpId ?? null);
         this.loading.set(false);
         this.loadClubData(match.clubId);
 
@@ -358,6 +527,47 @@ export class MatchDetailComponent implements OnInit {
 
   getJerseyName(jerseyId: number): string {
     return this.jerseys().find(j => j.id === jerseyId)?.name ?? 'Unknown Jersey';
+  }
+
+  setChampionTeamId(value: unknown): void {
+    this.championTeamId.set(this.toNullableNumber(value));
+  }
+
+  setMvpMemberId(value: unknown): void {
+    this.mvpMemberId.set(this.toNullableNumber(value));
+  }
+
+  canSaveResult(): boolean {
+    return !this.savingResult()
+      && !this.isUpcoming()
+      && !!this.championTeamId()
+      && !!this.mvpMemberId();
+  }
+
+  saveResult(): void {
+    const match = this.match();
+    const teamChampionId = this.championTeamId();
+    const clubMemberMvpId = this.mvpMemberId();
+
+    if (!match || !teamChampionId || !clubMemberMvpId || this.savingResult()) {
+      return;
+    }
+
+    this.savingResult.set(true);
+    this.matchesService.setResult(match.id, { teamChampionId, clubMemberMvpId }).subscribe({
+      next: (updatedMatch) => {
+        this.match.set(updatedMatch);
+        this.championTeamId.set(updatedMatch.teamChampionId ?? teamChampionId);
+        this.mvpMemberId.set(updatedMatch.clubMemberMvpId ?? clubMemberMvpId);
+        this.savingResult.set(false);
+        this.loadClubData(updatedMatch.clubId);
+        this.toast.success('Resultado salvo.');
+      },
+      error: (err) => {
+        this.savingResult.set(false);
+        this.toast.error(err.error?.detail ?? 'Erro ao salvar resultado.');
+      },
+    });
   }
 
   swapMatchPlayers(event: { from: PlayerUiModel; to: PlayerUiModel }): void {
@@ -434,6 +644,15 @@ export class MatchDetailComponent implements OnInit {
   private fallbackTeamColor(index: number): string {
     const colors = ['#1565c0', '#555555', '#00a844', '#d63050', '#f39c12', '#7c4dff'];
     return colors[index % colors.length];
+  }
+
+  private toNullableNumber(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   deleteMatch(): void {

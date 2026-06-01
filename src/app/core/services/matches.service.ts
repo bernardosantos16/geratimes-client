@@ -7,6 +7,7 @@ import {
   MatchResponseDTO,
   PageableParams,
   PageMatchResponseDTO,
+  SetMatchResultRequestDTO,
 } from '../models/api.models';
 import {environment} from '../../../environments/environment';
 
@@ -35,6 +36,10 @@ export class MatchesService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
+  setResult(id: string, dto: SetMatchResultRequestDTO): Observable<MatchResponseDTO> {
+    return this.http.patch<MatchResponseDTO>(`${this.baseUrl}/${id}/result`, dto);
+  }
+
   getParticipants(matchId: string): Observable<MatchParticipantResponseDTO[]> {
     return this.http.get<MatchParticipantResponseDTO[]>(`${this.baseUrl}/${matchId}/participants`);
   }
@@ -46,5 +51,13 @@ export class MatchesService {
     if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
     if (params?.sort) httpParams = httpParams.set('sort', params.sort);
     return this.http.get<PageMatchResponseDTO>(this.baseUrl, { params: httpParams });
+  }
+
+  getMatchesByClubAndUpcoming(clubId: string, params?: PageableParams): Observable<PageMatchResponseDTO> {
+    let httpParams = new HttpParams().set('clubId', clubId);
+    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
+    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
+    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
+    return this.http.get<PageMatchResponseDTO>(`${this.baseUrl}/upcoming`, { params: httpParams });
   }
 }

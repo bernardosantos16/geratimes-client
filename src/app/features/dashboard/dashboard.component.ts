@@ -9,11 +9,12 @@ import { ClubResponseDTO, MatchResponseDTO } from '@core/models/api.models';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { forkJoin } from 'rxjs';
 import { DatePipe } from '@angular/common';
+import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LoadingSpinnerComponent, DatePipe],
+  imports: [CommonModule, RouterModule, LoadingSpinnerComponent, DatePipe, SvgIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dashboard">
@@ -33,21 +34,33 @@ import { DatePipe } from '@angular/common';
         <!-- Quick stats -->
         <div class="stats-grid">
           <div class="stat-card">
-            <span class="stat-icon">🏟️</span>
+            <app-svg-icon
+                name="stadium"
+                size="35px"
+                ariaLabel="Stadium icon">
+            </app-svg-icon>
             <div class="stat-body">
               <span class="stat-value">{{ ownerClubs().length + memberClubs().length }}</span>
               <span class="stat-label">Clubes</span>
             </div>
           </div>
           <div class="stat-card">
-            <span class="stat-icon">⚽</span>
+            <app-svg-icon
+                name="soccer_ball"
+                size="35px"
+                ariaLabel="Ball icon">
+            </app-svg-icon>
             <div class="stat-body">
               <span class="stat-value">{{ totalMatches() }}</span>
               <span class="stat-label">Partidas</span>
             </div>
           </div>
           <div class="stat-card">
-            <span class="stat-icon">📅</span>
+            <app-svg-icon
+                name="calendar_today"
+                size="35px"
+                ariaLabel="Calendar icon">
+            </app-svg-icon>
             <div class="stat-body">
               <span class="stat-value">{{ upcomingMatchesCount() }}</span>
               <span class="stat-label">Próximas</span>
@@ -64,7 +77,11 @@ import { DatePipe } from '@angular/common';
             </div>
             @if (ownerClubs().length === 0) {
               <div class="empty-section">
-                <span>🏟️</span>
+                <app-svg-icon
+                    name='stadium'
+                    size='45px'
+                    ariaLabel='Stadium icon'>
+                </app-svg-icon>
                 <p>Nenhum clube como diretor.</p>
                 <a routerLink="/clubs/new" class="btn-sm">+ Criar Novo Clube</a>
               </div>
@@ -93,7 +110,11 @@ import { DatePipe } from '@angular/common';
             </div>
             @if (memberClubs().length === 0) {
               <div class="empty-section">
-                <span>🏟️</span>
+                <app-svg-icon
+                    name='stadium'
+                    size='45px'
+                    ariaLabel='Stadium icon'>
+                </app-svg-icon>
                 <p>Nenhum clube como membro.</p>
               </div>
             } @else {
@@ -186,7 +207,6 @@ import { DatePipe } from '@angular/common';
       &:hover { border-color: var(--accent); }
     }
 
-    .stat-icon { font-size: 1.8rem; }
     .stat-body { display: flex; flex-direction: column; }
     .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
       color: var(--accent); line-height: 1; }
@@ -255,15 +275,6 @@ import { DatePipe } from '@angular/common';
     .match-full { font-size: 0.75rem; color: var(--text2); }
 
     .arrow { color: var(--text3); font-size: 1.1rem; }
-
-    /* Role tags */
-    .role-tag {
-      font-size: 0.7rem; font-weight: 500; padding: 0.2rem 0.4rem;
-      border-radius: 4px; text-transform: uppercase; white-space: nowrap;
-      display: inline-block;
-    }
-    .director { background: rgba(255, 215, 0, 0.1); color: var(--accent); }
-    .member { background: rgba(0, 123, 255, 0.1); color: var(--accent); }
   `],
 })
 export class DashboardComponent implements OnInit {
@@ -275,7 +286,6 @@ export class DashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly ownerClubs = signal<ClubResponseDTO[]>([]);
   readonly memberClubs = signal<ClubResponseDTO[]>([]);
-  readonly recentMatches = signal<MatchResponseDTO[]>([]);
   readonly totalMatches = signal(0);
   readonly upcomingMatchesCount = signal(0);
   readonly upcomingMatchesList = signal<MatchResponseDTO[]>([]);
@@ -284,23 +294,54 @@ export class DashboardComponent implements OnInit {
     forkJoin({
       ownerClubs: this.clubsService.getClubs('DIRECTOR'),
       memberClubs: this.clubsService.getClubs('MEMBER'),
-      // totalMatches: this.matchesService.getMatches({ size: 1 }),
-      // upcomingMatches: this.matchesService.getMatches({ size: 100, sort: 'dateTime,desc' }),
-      // recentMatches: this.matchesService.getMatches({ size: 5, sort: 'dateTime,desc' })
     }).subscribe({
-      // next: ({ ownerClubs, memberClubs, totalMatches, upcomingMatches, recentMatches }) => {
       next: ({ ownerClubs, memberClubs }) => {
         this.ownerClubs.set(ownerClubs);
         this.memberClubs.set(memberClubs);
-        // this.totalMatches.set(totalMatches.totalElements);
-        // const now = new Date();
-        // const upcoming = upcomingMatches.content.filter(m => new Date(m.dateTime) > now);
-        // this.upcomingMatchesCount.set(upcoming.length);
-        // this.upcomingMatchesList.set(upcoming.slice(0, 5));
-        // this.recentMatches.set(recentMatches.content);
-        this.loading.set(false);
+
+        // Combinar todos os clubes e carregar próximas partidas
+        const allClubs = [...ownerClubs, ...memberClubs];
+        this.loadUpcomingMatches(allClubs);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  private loadUpcomingMatches(clubs: ClubResponseDTO[]): void {
+    if (clubs.length === 0) {
+      this.loading.set(false);
+      return;
+    }
+
+    // Chamar getMatchesByClubAndUpcoming para cada clube
+    const upcomingRequests = clubs.map(club =>
+      this.matchesService.getMatchesByClubAndUpcoming(club.id, { size: 100 })
+    );
+
+    forkJoin(upcomingRequests).subscribe({
+      next: (results) => {
+        // Combinar todas as partidas de todos os clubes
+        const allUpcomingMatches: MatchResponseDTO[] = [];
+        results.forEach(pageResult => {
+          if (pageResult.content) {
+            allUpcomingMatches.push(...pageResult.content);
+          }
+        });
+
+        // Remover duplicatas (uma partida pode aparecer em múltiplos clubes)
+        const uniqueMatches = Array.from(new Map(
+          allUpcomingMatches.map(m => [m.id, m])
+        ).values());
+
+        this.totalMatches.set(uniqueMatches.length);
+        this.upcomingMatchesCount.set(uniqueMatches.length);
+        this.upcomingMatchesList.set(uniqueMatches.slice(0, 5)); // Top 5
+
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
     });
   }
 

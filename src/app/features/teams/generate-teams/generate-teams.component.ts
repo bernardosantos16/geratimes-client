@@ -19,6 +19,7 @@ import { SquareRatingComponent } from '../../../shared/components/square-rating/
 import { TeamCardComponent } from '../../../shared/components/team-card/team-card.component';
 import { PlayerUiModel, TeamUiModel } from '../../../core/models/team-ui.model';
 import { forkJoin } from 'rxjs';
+import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
 
 type Step = 'select-players' | 'configure' | 'result';
 
@@ -32,7 +33,7 @@ interface MemberWithRole extends ClubMemberResponseDTO {
   imports: [
     CommonModule, RouterModule, ReactiveFormsModule,
     PageHeaderComponent, LoadingSpinnerComponent,
-    JerseyBadgeComponent, SquareRatingComponent, TeamCardComponent,
+    JerseyBadgeComponent, SquareRatingComponent, TeamCardComponent, SvgIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -81,13 +82,23 @@ interface MemberWithRole extends ClubMemberResponseDTO {
                     class="pos-btn"
                     [class.active]="member.assignedAs === 'line'"
                     (click)="setPosition(member, 'line')">
-                    🏃 Linha
+                    <app-svg-icon
+                      name = 'soccer_cleats'
+                      size='20px'  
+                      ariaLabel='Soccer Cleats Icon'
+                    />
+                    Linha
                   </button>
                   <button
                     class="pos-btn gk"
                     [class.active]="member.assignedAs === 'goalkeeper'"
                     (click)="setPosition(member, 'goalkeeper')">
-                    🥅 Goleiro
+                    <app-svg-icon
+                        name = 'two_hands'
+                        size='20px'
+                        ariaLabel='Goalkeeper Gloves Icon'
+                    /> 
+                    Goleiro
                   </button>
                   <button
                     class="pos-btn off"

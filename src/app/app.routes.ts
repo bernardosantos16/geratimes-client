@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard } from '@core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -102,7 +102,7 @@ export const routes: Routes = [
       {
         path: 'matches/:id',
         loadComponent: () =>
-          import('./features/matches/match-detail/match-detail.component').then(
+          import('./features/matches/match-detail/match-detail-export.component').then(
             (m) => m.MatchDetailComponent
           ),
         title: 'Partida — Ferino',

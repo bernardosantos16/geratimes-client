@@ -8,6 +8,7 @@ import {
   UserResponseDTO,
 } from '../models/api.models';
 import { environment } from '../../../environments/environment';
+import { ClubContextService } from './club-context.service';
 
 interface AuthState {
   accessToken: string | null;
@@ -22,6 +23,7 @@ const TOKEN_EXPIRY_SKEW_MS = 10_000;
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly clubContextService = inject(ClubContextService);
   private readonly baseUrl = `${environment.apiUrl}/api/auth`;
 
   // ── Estado de refresh (usado pelo interceptor) ────────────────────────────
@@ -81,6 +83,7 @@ export class AuthService {
 
   private clearSession(): void {
     this._state.set({ accessToken: null, user: null });
+    this.clubContextService.clearClubContext();
     localStorage.removeItem(STORAGE_KEY);
     this.router.navigate(['/auth/login']);
   }

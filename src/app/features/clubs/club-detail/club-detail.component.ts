@@ -9,7 +9,7 @@ import { MatchesService } from '@core/services/matches.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubContextService } from '@core/services/club-context.service';
 import {
-  ClubResponseDTO, ClubMemberResponseDTO, ClubJerseyResponseDTO, MatchResponseDTO
+  ClubResponseDTO, ClubMemberResponseDTO, ClubJerseyResponseDTO, MatchResponseDTO, ClubRole
 } from '@core/models/api.models';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
@@ -19,6 +19,7 @@ import { ClubRolePipe } from '@shared/pipes/app.pipes';
 import { forkJoin } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import {ConfirmDialogComponent} from "@shared/components/confirm-dialog/confirm-dialog.component";
+import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
 
 type Tab = 'members' | 'jerseys' | 'matches';
 
@@ -28,7 +29,7 @@ type Tab = 'members' | 'jerseys' | 'matches';
   imports: [
     CommonModule, RouterModule, ReactiveFormsModule,
     PageHeaderComponent, LoadingSpinnerComponent,
-    SquareRatingComponent, JerseyBadgeComponent, ClubRolePipe, DatePipe, ConfirmDialogComponent,
+    SquareRatingComponent, JerseyBadgeComponent, ClubRolePipe, DatePipe, ConfirmDialogComponent, SvgIconComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -41,7 +42,14 @@ type Tab = 'members' | 'jerseys' | 'matches';
           eyebrow="Clube"
           backLink="/clubs">
         @if (userRole() === 'DIRECTOR') {
-          <a [routerLink]="['/clubs', club()!.id, 'edit']" class="btn-outline">✏️ Editar</a>
+          <a [routerLink]="['/clubs', club()!.id, 'edit']" class="btn-outline">
+            <app-svg-icon
+                name='edit'
+                size='20px'
+                ariaLabel='Edit icon'>
+            </app-svg-icon>
+            Editar
+          </a>
           <a [routerLink]="['/clubs', club()!.id, 'matches', 'new']" class="btn-primary">+ Nova Partida</a>
         }
       </app-page-header>
@@ -49,13 +57,25 @@ type Tab = 'members' | 'jerseys' | 'matches';
       <!-- Tabs -->
       <div class="tabs">
         <button class="tab" [class.active]="activeTab() === 'members'" (click)="activeTab.set('members')">
-          👥 Membros <span class="badge">{{ members().length }}</span>
+          <app-svg-icon
+              name='groups'
+              ariaLabel='Group icon'>
+          </app-svg-icon> 
+          Membros <span class="badge">{{ members().length }}</span>
         </button>
         <button class="tab" [class.active]="activeTab() === 'jerseys'" (click)="activeTab.set('jerseys')">
-          👕 Camisas <span class="badge">{{ jerseys().length }}</span>
+          <app-svg-icon
+              name='apparel'
+              ariaLabel='Apparel icon'>
+          </app-svg-icon>
+          Camisas <span class="badge">{{ jerseys().length }}</span>
         </button>
         <button class="tab" [class.active]="activeTab() === 'matches'" (click)="activeTab.set('matches')">
-          ⚽ Partidas <span class="badge">{{ matches().length }}</span>
+          <app-svg-icon
+              name='soccer_ball'
+              ariaLabel='Ball icon'>
+          </app-svg-icon>
+          Partidas <span class="badge">{{ matches().length }}</span>
         </button>
       </div>
 
@@ -90,8 +110,9 @@ type Tab = 'members' | 'jerseys' | 'matches';
             <div class="members-table">
               <div class="table-header">
                 <span class="col-name">Nome</span>
-                <span class="col-rating">Nível</span>
-                <!--                <span class="col-role">Função</span>-->
+                @if (userRole() === 'DIRECTOR') {
+                    <span class="col-rating">Nível</span>
+                }
                 <span class="col-stat">MVP</span>
                 <span class="col-stat">Campeão</span>
               </div>
@@ -105,8 +126,9 @@ type Tab = 'members' | 'jerseys' | 'matches';
                       </span>
                     }
                   </span>
-                  <app-square-rating [value]="member.rating ?? 0"/>
-
+                  @if (userRole() === 'DIRECTOR') {
+                    <app-square-rating [value]="member.rating ?? 0"/>
+                  }
                   <span class="mvp-count">{{ member.timesMvp ?? 0 }}x</span>
                   <span class="mvp-count">{{ member.timesChampion ?? 0 }}x</span>
                 </div>
@@ -170,11 +192,11 @@ type Tab = 'members' | 'jerseys' | 'matches';
       @if (activeTab() === 'matches') {
         <div class="tab-content">
           <div class="tab-header">
-            <h3>Partidas do clube</h3>
+            <h3>Próximas partidas do clube</h3>
             <a [routerLink]="['/clubs', clubId, 'matches']" class="btn-link">Ver todas ›</a>
           </div>
           @if (matches().length === 0) {
-            <div class="empty-msg">Nenhuma partida cadastrada.</div>
+            <div class="empty-msg">Nenhuma partida por vir</div>
           } @else {
             <div class="matches-list">
               @for (match of matches(); track match.id) {
@@ -557,18 +579,30 @@ export class ClubDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.clubId = this.route.snapshot.paramMap.get('id')!;
-    this.userRole.set(this.clubContextService.selectedClubRole());
+    const contextRole = this.getRoleFromContext();
+    if (contextRole) {
+      this.userRole.set(contextRole);
+    }
+
     forkJoin({
       club:    this.clubsService.getClub(this.clubId),
       members: this.clubsService.getMembers(this.clubId, { size: 100 }),
       jerseys: this.clubsService.getJerseys(this.clubId),
-      matches: this.matchesService.getMatchesByClub(this.clubId, { size: 100 }),
+      matches: this.matchesService.getMatchesByClubAndUpcoming(this.clubId, { size: 100 }),
+      directorClubs: this.clubsService.getClubs('DIRECTOR'),
+      memberClubs: this.clubsService.getClubs('MEMBER'),
     }).subscribe({
-      next: ({ club, members, jerseys, matches }) => {
+      next: ({ club, members, jerseys, matches, directorClubs, memberClubs }) => {
         this.club.set(club);
         this.members.set(members.content);
         this.jerseys.set(jerseys);
         this.matches.set(matches.content);
+        const resolvedRole =
+          this.resolveRoleFromClubLists(directorClubs, memberClubs) ?? this.getRoleFromContext();
+        this.userRole.set(resolvedRole);
+        if (resolvedRole) {
+          this.clubContextService.setClubContext(this.clubId, resolvedRole);
+        }
         this.loading.set(false);
       },
       error: () => {
@@ -670,5 +704,26 @@ export class ClubDetailComponent implements OnInit {
       },
       error: () => this.toast.error('Erro ao remover camisa.'),
     });
+  }
+
+  private getRoleFromContext(): ClubRole | null {
+    const selectedClubId = this.clubContextService.selectedClubId();
+    if (selectedClubId !== this.clubId) {
+      return null;
+    }
+    return this.clubContextService.selectedClubRole();
+  }
+
+  private resolveRoleFromClubLists(
+    directorClubs: ClubResponseDTO[],
+    memberClubs: ClubResponseDTO[]
+  ): ClubRole | null {
+    if (directorClubs.some((club) => club.id === this.clubId)) {
+      return 'DIRECTOR';
+    }
+    if (memberClubs.some((club) => club.id === this.clubId)) {
+      return 'MEMBER';
+    }
+    return null;
   }
 }
