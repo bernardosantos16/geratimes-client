@@ -107,9 +107,6 @@ import { TeamUiModel, PlayerUiModel } from '@core/models/team-ui.model';
     }
     .players-list.cdk-drop-list-dragging {
         background: color-mix(in srgb, var(--team-color) 8%, transparent);
-        border: 1px dashed var(--team-color);
-        border-radius: 8px;
-        box-shadow: 0 0 12px color-mix(in srgb, var(--team-color) 30%, transparent);
     }
     .players-list.cdk-drop-list-dragging app-player-item:not(.cdk-drag-placeholder) {
         transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
