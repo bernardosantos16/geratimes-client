@@ -147,26 +147,37 @@ import {TeamsService} from "@core/services/teams.service";
       @if (teams().length > 0) {
         <div class="section-card">
           <div class="section-head">
-            <h2>Times Gerados <span class="count">{{ teams().length }}</span></h2>
-            <p class="section-hint">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+            <div>
+              <h2>Times Gerados <span class="count">{{ teams().length }}</span></h2>
+              <p class="section-hint">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+            </div>
+            @if (pendingSwaps().length > 0) {
+              <div class="swap-actions">
+                <span class="swap-counter">{{ pendingSwaps().length }} troca(s) pendente(s)</span>
+                <button class="btn-primary" (click)="savePendingSwaps()" [disabled]="swapping()">
+                  {{ swapping() ? 'Salvando...' : '💾 Salvar Trocas' }}
+                </button>
+                <button class="btn-secondary" (click)="clearPendingSwaps()" [disabled]="swapping()">Descartar</button>
+              </div>
+            }
           </div>
           <div class="teams-grid">
             @if (freeGoalkeepersCard()) {
               <app-team-card
                 [team]="freeGoalkeepersCard()!"
-                [enableSwap]="!swapping()"
+                [enableSwap]="true"
                 [dropListId]="dropListId(freeGoalkeepersCard()!.id)"
                 [connectedDropLists]="teamDropListIds()"
-                (swapRequested)="swapMatchPlayers($event)" />
+                (swapRequested)="addPendingSwap($event)" />
             }
 
             @for (team of teamCards(); track team.id) {
               <app-team-card
                 [team]="team"
-                [enableSwap]="!swapping()"
+                [enableSwap]="true"
                 [dropListId]="dropListId(team.id)"
                 [connectedDropLists]="teamDropListIds()"
-                (swapRequested)="swapMatchPlayers($event)" />
+                (swapRequested)="addPendingSwap($event)" />
             }
             
           </div>
@@ -365,6 +376,25 @@ import {TeamsService} from "@core/services/teams.service";
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1rem;
     }
+
+    /* Swap actions bar */
+    .swap-actions {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;
+      background: var(--accent-dim); border: 1px dashed var(--accent);
+      border-radius: 8px; margin-top: 0.75rem;
+    }
+
+    .swap-counter {
+      font-size: 0.85rem; font-weight: 600; color: var(--accent); flex: 1;
+    }
+
+    .btn-secondary {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+      &:hover:not(:disabled) { border-color: var(--text3); color: var(--text); }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
   `],
 })
 export class MatchDetailComponent implements OnInit {
@@ -388,6 +418,7 @@ export class MatchDetailComponent implements OnInit {
   readonly savingResult = signal(false);
   readonly championTeamId = signal<number | null>(null);
   readonly mvpMemberId = signal<number | null>(null);
+  readonly pendingSwaps = signal<Array<{ from: PlayerUiModel; to: PlayerUiModel }>>([]);
   private club = signal<ClubResponseDTO | null>(null);
 
   clubName = () => this.club()?.name ?? '';
@@ -572,7 +603,7 @@ export class MatchDetailComponent implements OnInit {
 
   swapMatchPlayers(event: { from: PlayerUiModel; to: PlayerUiModel }): void {
     const matchId = this.match()?.id;
-    if (!matchId || this.swapping() || event.from.position !== event.to.position) return;
+    if (!matchId || event.from.position !== event.to.position) return;
 
     this.swapping.set(true);
     this.teamsService.swapPlayers({
@@ -599,6 +630,75 @@ export class MatchDetailComponent implements OnInit {
         this.toast.error(err.error?.detail ?? 'Erro ao trocar jogadores.');
       },
     });
+  }
+
+  addPendingSwap(event: { from: PlayerUiModel; to: PlayerUiModel }): void {
+    // Validar se é uma troca válida
+    if (event.from.position !== event.to.position || event.from.id === event.to.id || event.from.teamId === event.to.teamId) {
+      return;
+    }
+
+    // Atualizar participantes localmente já
+    this.participants.update((participants) =>
+      participants.map((participant) => {
+        if (participant.clubMemberId === event.from.id) {
+          return { ...participant, teamId: event.to.teamId ?? undefined };
+        }
+        if (participant.clubMemberId === event.to.id) {
+          return { ...participant, teamId: event.from.teamId ?? undefined };
+        }
+        return participant;
+      })
+    );
+
+    // Adicionar ao array de trocas pendentes
+    this.pendingSwaps.update((swaps) => [...swaps, event]);
+  }
+
+  savePendingSwaps(): void {
+    const matchId = this.match()?.id;
+    const swaps = this.pendingSwaps();
+
+    if (!matchId || swaps.length === 0 || this.swapping()) return;
+
+    this.swapping.set(true);
+    const swapPayload = swaps.map((s) => ({ memberIdFrom: s.from.id, memberIdTo: s.to.id }));
+
+    this.teamsService.swapPlayers({
+      matchId,
+      swaps: swapPayload,
+    }).subscribe({
+      next: () => {
+        this.pendingSwaps.set([]);
+        this.swapping.set(false);
+        this.toast.success(`${swaps.length} troca(s) salva(s) com sucesso!`);
+      },
+      error: (err) => {
+        this.swapping.set(false);
+        this.toast.error(err.error?.detail ?? 'Erro ao salvar trocas.');
+      },
+    });
+  }
+
+  clearPendingSwaps(): void {
+    // Reverter as mudanças locais
+    const swaps = this.pendingSwaps();
+    this.participants.update((participants) =>
+      participants.map((participant) => {
+        for (const swap of swaps) {
+          if (participant.clubMemberId === swap.from.id) {
+            return { ...participant, teamId: swap.from.teamId ?? undefined };
+          }
+          if (participant.clubMemberId === swap.to.id) {
+            return { ...participant, teamId: swap.to.teamId ?? undefined };
+          }
+        }
+        return participant;
+      })
+    );
+
+    this.pendingSwaps.set([]);
+    this.toast.info('Trocas descartadas.');
   }
 
   dropListId(teamId: number): string {

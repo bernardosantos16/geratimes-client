@@ -41,7 +41,7 @@ import { SquareRatingComponent } from '../square-rating/square-rating.component'
         border-bottom-color: var(--border);
         border-radius: 6px;
         cursor: grab;
-        transition: background 0.15s, transform 0.15s, box-shadow 0.15s, opacity 0.15s, color 0.15s, border-color 0.15s;
+        transition: background 0.15s, transform 0.15s, box-shadow 0.15s, opacity 0.15s, color 0.15s, border-color 0.15s, border 0.15s;
         user-select: none;
         position: relative;
         min-height: 29px;
@@ -76,8 +76,10 @@ import { SquareRatingComponent } from '../square-rating/square-rating.component'
     .gk-label { color: var(--text3); }
     app-square-rating { flex-shrink: 0; }
     .cdk-drag-preview {
-        box-shadow: var(--shadow-md);
-        border-color: var(--accent);
+        opacity: 0 !important;
+    }
+    .cdk-drag-animating {
+        transition: transform 180ms cubic-bezier(0, 0, 0.2, 1) !important;
     }
     `]
 })
