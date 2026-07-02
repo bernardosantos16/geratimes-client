@@ -1,0 +1,44 @@
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">FERINO</div>
+            <h1>Verificar Email</h1>
+            <p>Comece a organizar seu futebol agora.</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Código de Verificação</label>
+
+                    <div class="otp-container">
+                        @for (digit of otpLength; track $index) {
+                            <input
+                                #inputBox
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-8]*"
+                                maxlength="1"
+                                class="otp-input"
+                                (keydown)="onKeyDown($event, $index)"
+                                (keyup)="onKeyUp($event, $index)"
+                                (paste)="onPaste($event)"
+                            />
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (serverError()) {
+                <div class="server-error">{{ serverError() }}</div>
+            }
+
+            <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
+                @if (loading()) { <span class="spinner"></span> }
+                {{ loading() ? 'Verificando...' : 'Verificar conta' }}
+            </button>
+        </form>
+
+    </div>
+    <div class="auth-bg"><div class="bg-glow"></div></div>
+</div>

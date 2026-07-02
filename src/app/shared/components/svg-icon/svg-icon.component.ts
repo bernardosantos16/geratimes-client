@@ -6,45 +6,8 @@ import {IconRegistryService} from '@core/services/icon-registry.service';
     selector: 'app-svg-icon',
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        @if (iconExists()) {
-            <span
-                    class="icon-wrapper"
-                    [innerHTML]="iconHtml()"
-                    [style]="styles()"
-                    [attr.aria-label]="ariaLabel"
-                    role="img">
-      </span>
-        } @else {
-            <span class="icon-wrapper icon-missing" [style]="styles()">⚠️</span>
-        }
-    `,
-    styles: [`
-        :host {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text2);
-        }
-
-        .icon-wrapper {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ::ng-deep "fura" a encapsulação e alcança o SVG injetado via innerHTML */
-        :host ::ng-deep .icon-wrapper svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor;
-        }
-
-        .icon-missing {
-            opacity: 0.4;
-            font-size: 0.6em;
-        }
-    `]
+    templateUrl: 'svg-icon.component.html',
+    styleUrls: ['svg-icon.component.scss']
 })
 export class SvgIconComponent {
     @Input() set name(value: string) {

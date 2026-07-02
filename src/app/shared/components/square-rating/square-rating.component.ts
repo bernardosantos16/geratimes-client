@@ -6,63 +6,8 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <span
-      class="square-rating"
-      [class.interactive]="interactive"
-      [style.--square-size.px]="size"
-      [attr.aria-label]="'Nível ' + normalizedValue + ' de ' + max">
-      @for (square of squares; track $index) {
-        <span
-          class="rating-square"
-          [class.filled]="$index < normalizedValue"
-          (click)="interactive && onSelect($index + 1)"
-          (keydown.enter)="interactive && onSelect($index + 1)"
-          (keydown.space)="interactive && onSelect($index + 1)"
-          [tabindex]="interactive ? 0 : -1"
-          [attr.role]="interactive ? 'button' : null"
-          [attr.aria-label]="'Nível ' + ($index + 1)">
-        </span>
-      }
-    </span>
-  `,
-  styles: [`
-    :host {
-      display: inline-flex;
-      line-height: 1;
-    }
-
-    .square-rating {
-      --square-size: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .rating-square {
-      width: var(--square-size);
-      height: var(--square-size);
-      border-radius: 2px;
-      background: var(--border);
-      flex-shrink: 0;
-      transition: background 0.15s, transform 0.1s;
-    }
-
-    .rating-square.filled {
-      background: var(--orange);
-    }
-
-    .square-rating.interactive .rating-square {
-      cursor: pointer;
-    }
-
-    .square-rating.interactive .rating-square:hover,
-    .square-rating.interactive .rating-square:focus-visible {
-      outline: none;
-      transform: scale(1.2);
-      background: var(--orange);
-    }
-  `],
+  templateUrl: 'square-rating.component.html',
+  styleUrls: ['square-rating.component.scss'],
 })
 export class SquareRatingComponent {
   @Input() value: number | null | undefined = 0;

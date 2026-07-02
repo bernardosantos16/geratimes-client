@@ -1,0 +1,59 @@
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">FERINO</div>
+            <h1>Entrar na conta</h1>
+            <p>Bem-vindo de volta. Insira suas credenciais.</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="login">E-mail</label>
+                <input
+                        id="login"
+                        type="email"
+                        formControlName="login"
+                        autocomplete="email"
+                        class="form-input" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <div class="input-wrap">
+                    <input
+                            id="password"
+                            [type]="showPassword() ? 'text' : 'password'"
+                            formControlName="password"
+                            autocomplete="current-password"
+                            class="form-input" />
+                    <button type="button" class="toggle-pw" (click)="showPassword.update(v => !v)" [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'">
+                        @if (showPassword()) {
+                            <app-svg-icon name='visibility_off'></app-svg-icon>
+                        } @else {
+                            <app-svg-icon name='visibility'></app-svg-icon>
+                        }
+                    </button>
+                </div>
+            </div>
+
+            @if (serverError()) {
+                <div class="server-error">{{ serverError() }}</div>
+            }
+
+            <button type="submit" class="btn-submit" [disabled]="loading()">
+                @if (loading()) { <span class="spinner"></span> }
+                {{ loading() ? 'Entrando...' : 'Entrar' }}
+            </button>
+        </form>
+
+        <p class="auth-footer">
+            Não tem conta?
+            <a routerLink="/auth/register">Criar conta</a>
+        </p>
+    </div>
+
+    <!-- Decorative background -->
+    <div class="auth-bg">
+        <div class="bg-glow"></div>
+    </div>
+</div>

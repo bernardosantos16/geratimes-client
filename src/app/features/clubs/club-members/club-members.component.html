@@ -1,0 +1,107 @@
+<div class="tab-content">
+    <!-- Add member form -->
+    @if (store.userRole() === 'DIRECTOR') {
+        <div class="mini-form-card">
+            <h3>Adicionar membro</h3>
+            <form [formGroup]="memberForm" (ngSubmit)="addMember()" class="inline-form">
+                <input type="text" formControlName="name" placeholder="Nome do jogador" class="form-input"/>
+                <div class="rating-inline">
+                    <span class="rating-label">Nível:</span>
+                    <app-square-rating
+                            [value]="memberForm.get('rating')?.value || 0"
+                            [interactive]="true"
+                            (ratingChange)="memberForm.patchValue({ rating: $event })">
+                    </app-square-rating>
+                </div>
+                <button type="submit" class="btn-primary-sm" [disabled]="memberForm.invalid">Adicionar</button>
+            </form>
+        </div>
+    }
+
+    @if (store.members().length === 0) {
+        <div class="empty-msg">Nenhum membro cadastrado.</div>
+    } @else {
+
+        <span class="members-length">Número de membros: {{store.members().length}}</span>
+
+        <div class="members-table">
+            <div class="table-header">
+                <span class="col-name">Nome</span>
+                @if (store.userRole() === 'DIRECTOR') {
+                    <span class="col-rating">Nível</span>
+                }
+                <span class="col-stat">MVP</span>
+                <span class="col-stat">Campeão</span>
+            </div>
+            @for (member of store.members(); track $index) {
+                <div class="table-row" [class.clickable]="store.userRole() === 'DIRECTOR'"
+                     (click)="store.userRole() === 'DIRECTOR' && openEditMember(member)">
+                    <span class="member-name">{{ member.name }}
+                        @if (member.clubRole === 'DIRECTOR') {
+                            <span class="role-badge" [class.director]="member.clubRole === 'DIRECTOR'">
+                                {{ member.clubRole | clubRole }}
+                            </span>
+                        }
+                    </span>
+                    @if (store.userRole() === 'DIRECTOR') {
+                        <app-square-rating [value]="member.rating ?? 0"/>
+                    }
+                    <span class="mvp-count">{{ member.timesMvp ?? 0 }}x</span>
+                    <span class="mvp-count">{{ member.timesChampion ?? 0 }}x</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Edit Member Modal -->
+@if (editingMember()) {
+    <div class="modal-backdrop" (click)="closeEditMember()">
+        <div class="modal-dialog" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Editar Membro</h2>
+                <button class="modal-close" (click)="closeEditMember()">×</button>
+            </div>
+            <form [formGroup]="editMemberForm" class="modal-body">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" formControlName="name" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label>Nível</label>
+                    <app-square-rating
+                            [value]="editMemberForm.get('rating')?.value || 0"
+                            [interactive]="true"
+                            (ratingChange)="editMemberForm.patchValue({ rating: $event })">
+                    </app-square-rating>
+                </div>
+                <div class="form-group">
+                    <label>Vezes MVP</label>
+                    <input type="number" formControlName="timesMvp" class="form-input" min="0" />
+                </div>
+                <div class="form-group">
+                    <label>Vezes Campeão</label>
+                    <input type="number" formControlName="timesChampion" class="form-input" min="0" />
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn-cancel" (click)="closeEditMember()">Cancelar</button>
+                <button class="btn-primary" [disabled]="editMemberForm.invalid" (click)="saveMemberChanges()">Salvar</button>
+                @if (editingMember()?.clubRole !== 'DIRECTOR') {
+                    <button class="btn-danger" (click)="deleteMemberConfirm()">Excluir</button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<app-confirm-dialog
+    #confirmDeleteMember
+    title="Excluir membro"
+    message="Tem certeza que deseja excluir este membro?"
+    icon='warning'
+    confirmLabel="Excluir"
+    [danger]="true"
+    (confirmed)="deleteSelectedMember()"
+    (cancelled)="memberToDelete.set(null)"
+/>

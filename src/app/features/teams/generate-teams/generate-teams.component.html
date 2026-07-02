@@ -1,0 +1,183 @@
+<app-page-header
+        title="Gerar Times"
+        eyebrow="Sortear"
+        subtitle="Distribua os jogadores em times equilibrados."
+        [backLink]="'/matches/' + matchId"
+/>
+
+@if (loading()) {
+    <app-loading-spinner label="Carregando dados..."/>
+} @else {
+    <!-- Step indicator -->
+    <div class="steps">
+        @for (s of stepLabels; track $index) {
+            <div class="step" [class.active]="currentStep() === s.key" [class.done]="isStepDone(s.key)">
+                <span class="step-num">{{ isStepDone(s.key) ? '✓' : ($index + 1) }}</span>
+                <span class="step-label">{{ s.label }}</span>
+            </div>
+            @if ($index < stepLabels.length - 1) {
+                <div class="step-connector" [class.done]="isStepDone(s.key)"></div>
+            }
+        }
+    </div>
+
+    <!-- ── Step 1: Select players ── -->
+    @if (currentStep() === 'select-players') {
+        <div class="step-card">
+            <div class="step-header">
+                <h2>Selecionar jogadores</h2>
+                <p>Escolha quem vai jogar e defina a posição de cada um.</p>
+            </div>
+
+            <div class="player-list">
+                @for (member of members(); track member.id) {
+                    <div class="player-row" [class.selected]="member.assignedAs !== null">
+                        <div class="player-info">
+                            <div class="player-avatar">{{ member.name[0].toUpperCase() }}</div>
+                            <div class="player-details">
+                                <span class="player-name">{{ member.name }}</span>
+                                <app-square-rating [value]="member.rating ?? 0"/>
+                            </div>
+                        </div>
+                        <div class="position-toggle">
+                            <button
+                                    class="pos-btn"
+                                    [class.active]="member.assignedAs === 'line'"
+                                    (click)="setPosition(member, 'line')">
+                                <app-svg-icon
+                                        name='soccer_cleats'
+                                        size='20px'
+                                        ariaLabel='Soccer Cleats Icon'
+                                />
+                                Linha
+                            </button>
+                            <button
+                                    class="pos-btn gk"
+                                    [class.active]="member.assignedAs === 'goalkeeper'"
+                                    (click)="setPosition(member, 'goalkeeper')">
+                                <app-svg-icon
+                                        name='two_hands'
+                                        size='20px'
+                                        ariaLabel='Goalkeeper Gloves Icon'
+                                />
+                                Goleiro
+                            </button>
+                            <button
+                                    class="pos-btn off"
+                                    [class.active]="member.assignedAs === null"
+                                    (click)="setPosition(member, null)">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="step-summary">
+                <span>🏃 Linha: <strong>{{ lineCount() }}</strong></span>
+                <span>🥅 Goleiros: <strong>{{ goalkeeperCount() }}</strong></span>
+            </div>
+
+            <div class="step-actions">
+                <button class="btn-primary" (click)="goToStep('configure')" [disabled]="lineCount() < 2">
+                    Próximo →
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- ── Step 2: Configure ── -->
+    @if (currentStep() === 'configure') {
+        <div class="step-card">
+            <div class="step-header">
+                <h2>Configurar times</h2>
+                <p>Defina quantos jogadores por time e atribua as camisas.</p>
+            </div>
+
+            <form [formGroup]="configForm" class="config-form">
+                <div class="form-group">
+                    <label>Jogadores de linha por time *</label>
+                    <input type="number" formControlName="maxLinePlayers" min="1" max="20" class="form-input-sm"/>
+                    @if (configForm.get('maxLinePlayers')?.invalid && configForm.get('maxLinePlayers')?.touched) {
+                        <span class="form-error">Mínimo 1 jogador</span>
+                    }
+                </div>
+
+                <div class="teams-preview">
+                    <div class="preview-info">
+                        Serão formados aproximadamente
+                        <strong class="accent">{{ estimatedTeams() }}</strong> times
+                        com <strong class="accent">{{ configForm.get('maxLinePlayers')?.value }}</strong> jogadores
+                        cada.
+                    </div>
+                </div>
+
+                @if (jerseys().length > 0) {
+                    <div class="jerseys-section">
+                        <h3>Camisas disponíveis</h3>
+                        <div class="jerseys-list">
+                            @for (jersey of jerseys(); track jersey.id) {
+                                <app-jersey-badge
+                                        [name]="jersey.name"
+                                        [hexColor]="jersey.hexColor"
+                                        [isGoalkeeper]="jersey.isGoalkeeperJersey"/>
+                            }
+                        </div>
+                    </div>
+                }
+            </form>
+
+            <div class="step-actions">
+                <button class="btn-back" (click)="goToStep('select-players')">← Voltar</button>
+                <button class="btn-primary" (click)="generateTeams()" [disabled]="generating() || configForm.invalid">
+                    @if (generating()) {
+                        <span class="spinner"></span>
+                    }
+                    {{ generating() ? 'Gerando...' : '⚽ Gerar Times' }}
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- ── Step 3: Result ── -->
+    @defer (when currentStep() === 'result') {
+        @if (currentStep() === 'result' && result()) {
+            <div class="result-section">
+                <div class="result-header">
+                    <div class="result-badge">
+                        <span class="result-count">{{ result()!.teamCount }}</span>
+                        <span class="result-label">Times gerados!</span>
+                    </div>
+                    <button class="btn-outline" (click)="goToStep('configure')">Regerar</button>
+                </div>
+
+                <p class="swap-note">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+
+                <div class="teams-grid">
+                    @for (team of generatedTeamCards(); track team.id) {
+                        <app-team-card
+                                [team]="team"
+                                [enableSwap]="!swapping()"
+                                (swapRequested)="swapGeneratedPlayers($event)"/>
+                    }
+                </div>
+
+                @if (result()!.unassignedGoalkeeperMemberIds.length > 0) {
+                    <div class="unassigned-section">
+                        <h3>⚠️ Goleiros sem time</h3>
+                        <div class="unassigned-list">
+                            @for (id of result()!.unassignedGoalkeeperMemberIds; track id) {
+                                <span class="unassigned-chip">{{ memberName(id) }}</span>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="result-actions">
+                    <a [routerLink]="['/matches', matchId]" class="btn-outline">← Voltar para partida</a>
+                    <button class="btn-primary" (click)="goToStep('configure')">Regerar times</button>
+                </div>
+            </div>
+        }
+    }
+}

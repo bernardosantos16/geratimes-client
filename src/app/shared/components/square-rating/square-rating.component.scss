@@ -1,0 +1,35 @@
+:host {
+  display: inline-flex;
+  line-height: 1;
+}
+
+.square-rating {
+  --square-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rating-square {
+  width: var(--square-size);
+  height: var(--square-size);
+  border-radius: 2px;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.rating-square.filled {
+  background: var(--orange);
+}
+
+.square-rating.interactive .rating-square {
+  cursor: pointer;
+}
+
+.square-rating.interactive .rating-square:hover,
+.square-rating.interactive .rating-square:focus-visible {
+  outline: none;
+  transform: scale(1.2);
+  background: var(--orange);
+}

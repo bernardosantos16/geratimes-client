@@ -1,0 +1,177 @@
+.steps {
+  display: flex; align-items: center; gap: 0; margin-bottom: 2rem;
+}
+
+.step {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0;
+
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    background: var(--surface2); color: var(--text3); border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .step-label { font-size: 0.82rem; color: var(--text3); font-weight: 500; transition: color 0.2s; }
+
+  &.active {
+    .step-num { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+    .step-label { color: var(--text); }
+  }
+
+  &.done {
+    .step-num { background: var(--accent); color: #050f09; border-color: var(--accent); }
+    .step-label { color: var(--text2); }
+  }
+}
+
+.step-connector {
+  flex: 1; height: 1px; background: var(--border); margin: 0 0.5rem;
+  &.done { background: var(--accent); }
+}
+
+/* Step card */
+.step-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;
+}
+
+.step-header {
+  h2 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  p  { font-size: 0.88rem; color: var(--text2); }
+}
+
+/* Player list */
+.player-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.player-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--card-bg);
+  gap: 1rem; flex-wrap: wrap;
+  transition: border-color 0.15s;
+  &.selected { border-color: var(--border-strong); }
+}
+
+.player-info { display: flex; align-items: center; gap: 0.6rem; }
+
+.player-avatar {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--surface2); color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+
+.player-details { display: flex; flex-direction: column; gap: 0.2rem; }
+.player-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+
+.position-toggle { display: flex; gap: 0.35rem; }
+
+.pos-btn {
+  padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text3); transition: all 0.15s;
+
+  &:hover { border-color: var(--border-strong); color: var(--text); }
+  &.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+  &.gk.active { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
+  &.off.active { border-color: var(--red); background: var(--red-dim); color: var(--red); }
+}
+
+.step-summary {
+  display: flex; gap: 1.5rem; font-size: 0.88rem; color: var(--text2);
+  padding: 0.75rem 1rem; background: var(--card-bg); border-radius: 8px;
+  border: 1px solid var(--border);
+  strong { color: var(--accent); }
+}
+
+/* Config form */
+.config-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.form-group { display: flex; flex-direction: column; gap: 0.35rem;
+  label { font-size: 0.82rem; font-weight: 500; color: var(--text2); } }
+
+.form-input-sm {
+  width: 120px; background: var(--input-bg); border: 1px solid var(--input-border);
+  border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; padding: 0.55rem 0.85rem; outline: none;
+  &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+}
+
+.form-error { font-size: 0.75rem; color: var(--red); }
+
+.teams-preview {
+  background: var(--accent-dim); border: 1px solid rgba(77,255,143,0.3);
+  border-radius: 10px; padding: 1rem;
+}
+
+.preview-info { font-size: 0.88rem; color: var(--text2); line-height: 1.6; }
+.accent { color: var(--accent); }
+
+.jerseys-section { display: flex; flex-direction: column; gap: 0.6rem;
+  h3 { font-size: 0.85rem; font-weight: 600; color: var(--text2); } }
+
+.jerseys-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Actions */
+.step-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--accent); color: #050f09; border: none;
+  padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 700;
+  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-back, .btn-outline {
+  background: none; border: 1px solid var(--border); color: var(--text2);
+  padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.88rem;
+  font-weight: 500; cursor: pointer; text-decoration: none;
+  transition: all 0.2s; display: inline-flex;
+  &:hover { border-color: var(--text3); color: var(--text); }
+}
+
+/* Results */
+.result-section { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.result-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+
+.result-badge {
+  display: flex; align-items: baseline; gap: 0.5rem;
+}
+
+.result-count {
+  font-family: 'Bebas Neue', sans-serif; font-size: 3rem;
+  color: var(--accent); letter-spacing: 0.04em; line-height: 1;
+}
+
+.result-label { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+
+.swap-note {
+  font-size: 0.82rem; color: var(--text3); text-align: center;
+  margin: -0.35rem 0 0.15rem;
+}
+
+.teams-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;
+}
+
+/* Unassigned */
+.unassigned-section {
+  background: var(--yellow-dim); border: 1px solid var(--yellow);
+  border-radius: 10px; padding: 1rem;
+  h3 { font-size: 0.88rem; font-weight: 600; color: var(--yellow); margin-bottom: 0.5rem; }
+}
+
+.unassigned-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.unassigned-chip {
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: 100px; font-size: 0.8rem; color: var(--text2);
+}
+
+.result-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-end; }

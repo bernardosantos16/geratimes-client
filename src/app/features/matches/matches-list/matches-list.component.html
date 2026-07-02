@@ -1,0 +1,38 @@
+<app-page-header title="Partidas" subtitle="Histórico e próximas partidas" eyebrow="Partidas">
+    <a [routerLink]="['/clubs', clubId, 'matches', 'new']" class="btn-primary">+ Nova Partida</a>
+</app-page-header>
+
+@if (loading()) {
+    <app-loading-spinner label="Carregando partidas..." />
+} @else if (matches().length === 0) {
+    <app-empty-state
+            icon="⚽"
+            title="Nenhuma partida ainda"
+            message="Agende uma partida para começar a organizar os times."
+            actionLabel="Agendar partida" />
+} @else {
+    <div class="matches-list">
+        @for (match of matches(); track match.id) {
+            <a [routerLink]="['/matches', match.id]" class="match-card">
+                <div class="match-date-col">
+                    <span class="match-time">{{ match.dateTime | matchDate:'time' }}</span>
+                    <span class="match-date">{{ match.dateTime | matchDate:'short' }}</span>
+                </div>
+                <div class="match-divider"></div>
+                <div class="match-status" [class.upcoming]="isUpcoming(match)">
+                    {{ isUpcoming(match) ? '📅 Agendada' : '✓ Realizada' }}
+                </div>
+                <span class="arrow">›</span>
+            </a>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+        <div class="pagination">
+            <button class="page-btn" (click)="loadPage(currentPage() - 1)" [disabled]="currentPage() === 0">← Anterior</button>
+            <span class="page-info">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+            <button class="page-btn" (click)="loadPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">Próxima →</button>
+        </div>
+    }
+}

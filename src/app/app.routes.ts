@@ -24,6 +24,14 @@ export const routes: Routes = [
           import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
         title: 'Criar conta — Ferino',
       },
+      {
+        path: 'email-verify',
+        loadComponent: () =>
+          import('./features/auth/email-verify/email-verify.component').then(
+            (m) => m.EmailVerifyComponent
+          ),
+        title: 'Verificar e-mail — Ferino',
+      },
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],
   },
@@ -57,14 +65,7 @@ export const routes: Routes = [
           ),
         title: 'Novo clube — Ferino',
       },
-      {
-        path: 'clubs/:id',
-        loadComponent: () =>
-          import('./features/clubs/club-detail/club-detail.component').then(
-            (m) => m.ClubDetailComponent
-          ),
-        title: 'Clube — Ferino',
-      },
+      // Rotas exatas DEVEM vir antes de clubs/:id para não serem capturadas pelos filhos
       {
         path: 'clubs/:id/edit',
         loadComponent: () =>
@@ -73,16 +74,6 @@ export const routes: Routes = [
           ),
         title: 'Editar clube — Ferino',
       },
-      // Club Overview
-      {
-        path: 'club/:id/overview',
-        loadComponent: () =>
-          import('./features/clubs/club-detail/club-detail.component').then(
-            (m) => m.ClubDetailComponent
-          ),
-        title: 'Clube — Ferino',
-      },
-      // Matches
       {
         path: 'clubs/:id/matches',
         loadComponent: () =>
@@ -90,6 +81,38 @@ export const routes: Routes = [
             (m) => m.MatchesListComponent
           ),
         title: 'Partidas — Ferino',
+      },
+      {
+        path: 'clubs/:id',
+        loadComponent: () =>
+          import('@shared/components/club-detail-nav/club-detail-nav.component').then(
+            (m) => m.ClubDetailNavComponent
+          ),
+        title: 'Clube — Ferino',
+        children: [
+          { path: '', redirectTo: 'members', pathMatch: 'full' },
+          {
+            path: 'members',
+            loadComponent: () =>
+              import('@features/clubs/club-members/club-members.component').then(
+                (m) => m.ClubMembersComponent
+              ),
+          },
+          {
+            path: 'jerseys',
+            loadComponent: () =>
+              import('@features/clubs/club-jerseys/club-jerseys.component').then(
+                (m) => m.ClubJerseysComponent
+              ),
+          },
+          {
+            path: 'upcoming',
+            loadComponent: () =>
+              import('@features/clubs/club-matches/club-matches.component').then(
+                (m) => m.ClubMatchesComponent
+              ),
+          },
+        ],
       },
       {
         path: 'matches/new',

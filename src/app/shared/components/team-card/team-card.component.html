@@ -1,0 +1,23 @@
+<article class="team-card" [style.--team-color]="team.jerseyColor">
+    <header class="team-header">
+        <span class="team-dot"></span>
+        <div class="team-title">
+            <span class="team-label">{{ team.jerseyName }}</span>
+            <span class="team-meta">{{ playerCount() }} jogadores</span>
+        </div>
+        <span class="pts">{{ getTeamRatingSum() }}pts</span>
+    </header>
+
+    <div class="players-list">
+        @for (player of allPlayers(); track player.id) {
+            <app-player-item
+                    [player]="player"
+                    [draggable]="enableSwap"
+                    (swapRequested)="onPlayerSwap($event)"
+
+            />
+        } @empty {
+            <p class="empty">Nenhum jogador</p>
+        }
+    </div>
+</article>

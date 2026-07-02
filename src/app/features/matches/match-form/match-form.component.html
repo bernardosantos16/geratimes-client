@@ -1,0 +1,35 @@
+<app-page-header
+        title="Nova Partida"
+        subtitle="Agende uma nova partida para o seu clube."
+        [backLink]="backLink()"
+/>
+
+<div class="form-card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-body">
+            <div class="form-group">
+                <label for="dateTime">Data e hora *</label>
+                <input
+                        id="dateTime"
+                        type="datetime-local"
+                        formControlName="dateTime"
+                        class="form-input" />
+                @if (f['dateTime'].invalid && f['dateTime'].touched) {
+                    <span class="form-error">Data e hora são obrigatórias</span>
+                }
+            </div>
+        </div>
+
+        @if (serverError()) {
+            <div class="server-error">{{ serverError() }}</div>
+        }
+
+        <div class="form-actions">
+            <a [routerLink]="backLink()" class="btn-cancel">Cancelar</a>
+            <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
+                @if (loading()) { <span class="spinner"></span> }
+                {{ loading() ? 'Agendando...' : 'Agendar partida' }}
+            </button>
+        </div>
+    </form>
+</div>

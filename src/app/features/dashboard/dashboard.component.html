@@ -1,0 +1,117 @@
+<div class="dashboard">
+    <!-- Hero greeting -->
+    <div class="greeting">
+        <div class="greeting-text">
+            <span class="eyebrow">Bem-vindo de volta</span>
+            <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span></h1>
+            <p>Organize suas partidas e times com facilidade.</p>
+        </div>
+        <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>
+    </div>
+
+    @if (loading()) {
+        <app-loading-spinner label="Carregando..." />
+    } @else {
+        <!-- Quick stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <app-svg-icon
+                        name="stadium"
+                        size="35px"
+                        ariaLabel="Stadium icon">
+                </app-svg-icon>
+                <div class="stat-body">
+                    <span class="stat-value">{{ ownerClubs().length + memberClubs().length }}</span>
+                    <span class="stat-label">Clubes</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <app-svg-icon
+                        name="soccer_ball"
+                        size="35px"
+                        ariaLabel="Ball icon">
+                </app-svg-icon>
+                <div class="stat-body">
+                    <span class="stat-value">{{ totalMatches() }}</span>
+                    <span class="stat-label">Partidas</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <app-svg-icon
+                        name="calendar_today"
+                        size="35px"
+                        ariaLabel="Calendar icon">
+                </app-svg-icon>
+                <div class="stat-body">
+                    <span class="stat-value">{{ upcomingMatchesCount() }}</span>
+                    <span class="stat-label">Próximas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owner Clubs -->
+        <div class="dashboard-grid">
+            <section class="section-card">
+                <div class="section-header">
+                    <h2>Clubes como Diretor</h2>
+                    <a routerLink="/clubs" class="btn-link">Ver todos →</a>
+                </div>
+                @if (ownerClubs().length === 0) {
+                    <div class="empty-section">
+                        <app-svg-icon
+                                name='stadium'
+                                size='45px'
+                                ariaLabel='Stadium icon'>
+                        </app-svg-icon>
+                        <p>Nenhum clube como diretor.</p>
+                        <a routerLink="/clubs/new" class="btn-sm">+ Criar Novo Clube</a>
+                    </div>
+                } @else {
+                    <div class="club-list">
+                        @for (club of ownerClubs().slice(0, 5); track club.id) {
+                            <a [routerLink]="['/clubs', club.id]" class="club-row owner-club" (click)="selectClub(club, 'DIRECTOR')">
+                                <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
+                                <div class="club-info">
+                                    <span class="club-name">{{ club.name }}</span>
+                                    <span class="club-nick">{{ '@' + club.nickname }}</span>
+                                </div>
+                                <span class="arrow">›</span>
+                            </a>
+                        }
+                    </div>
+                }
+            </section>
+
+            <!-- Member Clubs -->
+            <section class="section-card">
+                <div class="section-header">
+                    <h2>Clubes como Membro</h2>
+                    <a routerLink="/clubs" class="btn-link">Ver todos →</a>
+                </div>
+                @if (memberClubs().length === 0) {
+                    <div class="empty-section">
+                        <app-svg-icon
+                                name='stadium'
+                                size='45px'
+                                ariaLabel='Stadium icon'>
+                        </app-svg-icon>
+                        <p>Nenhum clube como membro.</p>
+                    </div>
+                } @else {
+                    <div class="club-list">
+                        @for (club of memberClubs().slice(0, 5); track club.id) {
+                            <a [routerLink]="['/clubs', club.id]" class="club-row member-club" (click)="selectClub(club, 'MEMBER')">
+                                <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
+                                <div class="club-info">
+                                    <span class="club-name">{{ club.name }}</span>
+                                    <span class="club-nick">{{ '@' + club.nickname }}</span>
+                                </div>
+                                <span class="arrow">›</span>
+                            </a>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+    }
+</div>

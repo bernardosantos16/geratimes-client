@@ -1,4 +1,4 @@
-import {ApplicationConfig, inject, provideAppInitializer, provideZoneChangeDetection} from '@angular/core';
+import {ApplicationConfig, inject, provideAppInitializer, provideZonelessChangeDetection} from '@angular/core';
 import {provideRouter, withComponentInputBinding, withViewTransitions} from '@angular/router';
 import {provideHttpClient, withInterceptors, withXsrfConfiguration} from '@angular/common/http';
 
@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
             registry.register(icon.name, icon.svg);
         });
     }),
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
     provideHttpClient(
       withInterceptors([authInterceptor]),

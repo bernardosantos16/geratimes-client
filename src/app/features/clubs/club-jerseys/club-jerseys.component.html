@@ -1,0 +1,42 @@
+<div class="tab-content">
+    <!-- Add jersey form -->
+    @if (store.userRole() === 'DIRECTOR') {
+        <div class="mini-form-card">
+            <h3>Adicionar camisa</h3>
+            <form [formGroup]="jerseyForm" (ngSubmit)="addJersey()" class="inline-form">
+                <input type="text" formControlName="name" placeholder="Nome da camisa" class="form-input"/>
+                <div class="color-pick">
+                    <label>Cor:</label>
+                    <input type="color" formControlName="hexColor" class="color-input"/>
+                    <span class="color-val">{{ jerseyForm.get('hexColor')?.value }}</span>
+                </div>
+                <label class="checkbox-label">
+                    <input type="checkbox" formControlName="isGoalkeeperJersey"/>
+                    Goleiro
+                </label>
+                <button type="submit" class="btn-primary-sm" [disabled]="jerseyForm.invalid">Adicionar</button>
+            </form>
+        </div>
+    }
+
+    @if (store.jerseys().length === 0) {
+        <div class="empty-msg">Nenhuma camisa cadastrada.</div>
+    } @else {
+        <div class="jerseys-grid">
+            @for (jersey of store.jerseys(); track jersey.id) {
+                <div class="jersey-card">
+                    <div class="jersey-info">
+                        <app-jersey-badge
+                                [name]="jersey.name"
+                                [hexColor]="jersey.hexColor"
+                                [isGoalkeeper]="jersey.isGoalkeeperJersey"
+                        />
+                    </div>
+                    @if (store.userRole() === 'DIRECTOR') {
+                        <button class="btn-icon-sm danger" (click)="deleteJersey(jersey.id)" title="Excluir">×</button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import {
   ClubResponseDTO,
   CreateClubRequestDTO,
@@ -26,8 +26,12 @@ export class ClubsService {
     return this.http.get<ClubResponseDTO[]>(`${this.baseUrl}?clubRole=${memberRole}`);
   }
 
-  getClub(id: string): Observable<ClubResponseDTO> {
+  getClubById(id: string): Observable<ClubResponseDTO> {
     return this.http.get<ClubResponseDTO>(`${this.baseUrl}/${id}`);
+  }
+
+  getClubByNickname(nickname: string): Observable<ClubResponseDTO> {
+    return this.http.get<ClubResponseDTO>(`${this.baseUrl}/nickname/${nickname}`);
   }
 
   createClub(dto: CreateClubRequestDTO): Observable<ClubResponseDTO> {

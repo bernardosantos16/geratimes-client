@@ -1,0 +1,21 @@
+<div class="tab-content">
+    <div class="tab-header">
+        <h3>Próximas partidas do clube</h3>
+        <a [routerLink]="['/clubs', store.clubId(), 'matches']" class="btn-link">Ver todas as partidas ›</a>
+    </div>
+    @if (store.matches().length === 0) {
+        <div class="empty-msg">Nenhuma partida por vir</div>
+    } @else {
+        <div class="matches-list">
+            @for (match of store.matches(); track match.id) {
+                <a [routerLink]="['/matches', match.id]" class="match-row">
+                    <div class="match-date-block">
+                        <span class="match-day">{{ match.dateTime | date:'dd/MM/yyyy' }}</span>
+                        <span class="match-full">{{ match.dateTime | date:'HH:mm' }}</span>
+                    </div>
+                    <span class="arrow">›</span>
+                </a>
+            }
+        </div>
+    }
+</div>

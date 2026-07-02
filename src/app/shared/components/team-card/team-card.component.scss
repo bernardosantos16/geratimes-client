@@ -1,0 +1,69 @@
+:host {
+    --team-color: var(--border);
+    display: block;
+}
+.team-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--team-color, var(--border));
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.team-card:hover {
+    border-color: color-mix(in srgb, var(--team-color, var(--accent)) 70%, var(--border));
+    box-shadow: 0 0 22px color-mix(in srgb, var(--team-color, transparent) 22%, transparent);
+}
+.team-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.9rem 1rem;
+    background: color-mix(in srgb, var(--team-color, var(--surface2)) 12%, var(--card-bg));
+    border-bottom: 1px solid var(--border);
+}
+.team-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--team-color);
+    flex-shrink: 0;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--team-color) 50%, transparent);
+}
+.team-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.team-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+}
+.team-meta {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.pts {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 0.22rem 0.62rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+.players-list {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-height: 132px;
+    transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+}

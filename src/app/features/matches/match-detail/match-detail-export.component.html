@@ -1,0 +1,154 @@
+@if (loading()) {
+    <app-loading-spinner label="Carregando partida..." />
+} @else if (match()) {
+    <app-page-header
+            [title]="match()!.dateTime | matchDate:'long'"
+            eyebrow="Partida"
+            [subtitle]="clubName()"
+            backLink="/clubs/{{ match()!.clubId }}">
+        <a [routerLink]="['/matches', match()!.id, 'generate']" class="btn-primary">
+
+            Gerar Times
+        </a>
+        <button class="btn-danger" (click)="confirmDel.open()">
+           
+            Excluir
+        </button>
+    </app-page-header>
+
+    <!-- Info cards -->
+    <div class="info-row">
+        <div class="info-card">
+            <span class="info-label">Data</span>
+            <span class="info-val">{{ match()!.dateTime | matchDate:'short' }}</span>
+        </div>
+        <div class="info-card">
+            <span class="info-label">Hora</span>
+            <span class="info-val">{{ match()!.dateTime | matchDate:'time' }}</span>
+        </div>
+        <div class="info-card">
+            <span class="info-label">Participantes</span>
+            <span class="info-val">{{ participants().length }}</span>
+        </div>
+        <div class="info-card">
+            <span class="info-label">Status</span>
+            <span class="info-val status" [class.upcoming]="isUpcoming()">
+            {{ isUpcoming() ? '📅 Agendada' : '✓ Realizada' }}
+          </span>
+        </div>
+    </div>
+
+    @if (!isUpcoming()) {
+        <div class="section-card result-card">
+            <div class="section-head result-head">
+                <div>
+                    <h2>Resultado da Partida</h2>
+                    <p class="section-hint">Defina o time campeão e o MVP entre os participantes.</p>
+                </div>
+                @if (hasResult()) {
+                    <span class="result-badge">Definido</span>
+                } @else {
+                    <span class="result-badge pending">Pendente</span>
+                }
+            </div>
+
+            @if (teams().length === 0) {
+                <div class="empty-msg">Gere os times antes de definir o resultado.</div>
+            } @else {
+                @if (hasResult()) {
+                    <div class="result-summary">
+                        <div class="result-item">
+                            <span class="result-label">Campeão</span>
+                            <span class="result-value">{{ championTeamName() }}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">MVP</span>
+                            <span class="result-value">{{ mvpMemberName() }}</span>
+                        </div>
+                    </div>
+                }
+
+                @if (!hasResult()) {
+                    <div class="result-form">
+                        <label class="form-field">
+                            <span>Time campeão</span>
+                            <select
+                                    class="form-select"
+                                    name="teamChampionId"
+                                    [ngModel]="championTeamId()"
+                                    (ngModelChange)="setChampionTeamId($event)"
+                                    [disabled]="savingResult()">
+                                <option [ngValue]="null" disabled>Selecione o time campeão</option>
+                                @for (team of teamCards(); track team.id) {
+                                    <option [ngValue]="team.id">{{ team.jerseyName }}</option>
+                                }
+                            </select>
+                        </label>
+
+                        <label class="form-field">
+                            <span>MVP</span>
+                            <select
+                                    class="form-select"
+                                    name="clubMemberMvpId"
+                                    [ngModel]="mvpMemberId()"
+                                    (ngModelChange)="setMvpMemberId($event)"
+                                    [disabled]="savingResult()">
+                                <option [ngValue]="null" disabled>Selecione o MVP</option>
+                                @for (player of mvpCandidates(); track player.id) {
+                                    <option [ngValue]="player.id">
+                                        {{ player.name }} - {{ player.position === 'GOAL' ? 'Goleiro' : 'Linha' }}
+                                    </option>
+                                }
+                            </select>
+                        </label>
+
+                        <button class="btn-primary result-submit" type="button" [disabled]="!canSaveResult()" (click)="saveResult()">
+                            {{ savingResult() ? 'Salvando...' : 'Salvar resultado' }}
+                        </button>
+                    </div>
+                } @else if (!hasResult()) {
+                    <div class="empty-msg">Resultado ainda não definido.</div>
+                }
+            }
+        </div>
+    }
+
+    <!-- Teams section -->
+    @defer (when teams().length > 0) {
+        <div class="section-card">
+            <div class="section-head">
+                <h2>Times Gerados <span class="count">{{ teams().length }}</span></h2>
+                <p class="section-hint">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+            </div>
+            <div class="teams-grid" #teamsGrid>
+                @if (freeGoalkeepersCard()) {
+                    <app-team-card
+                            [team]="freeGoalkeepersCard()!"
+                            [enableSwap]="!swapping() && !hasResult()"
+                            (swapRequested)="swapMatchPlayers($event)" />
+                }
+
+                @for (team of teamCards(); track team.id) {
+                    <app-team-card
+                            [team]="team"
+                            [enableSwap]="!swapping() && !hasResult()"
+                            (swapRequested)="swapMatchPlayers($event)" />
+                }
+            </div>
+        </div>
+    } @placeholder {
+        <div class="section-card">
+            <div class="empty-msg">Nenhum time foi gerado ainda para esta partida.</div>
+        </div>
+    }
+}
+
+<app-confirm-dialog
+    #confirmDel
+    title="Excluir partida"
+    message="Tem certeza que deseja excluir esta partida? Todos os times e participantes serão removidos."
+    icon="danger"
+    confirmLabel="Excluir"
+    [danger]="true"
+    (confirmed)="deleteMatch()"
+/>

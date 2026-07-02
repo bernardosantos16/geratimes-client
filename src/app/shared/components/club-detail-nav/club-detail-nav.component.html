@@ -1,0 +1,33 @@
+@if (store.loading()) {
+    <app-loading-spinner label="Carregando clube..."/>
+} @else if (store.club()) {
+    <app-page-header
+            [title]="store.club()!.name"
+            [subtitle]="'@' + store.club()!.nickname"
+            eyebrow="Clube"
+            backLink="/clubs">
+        @if (store.userRole() === 'DIRECTOR') {
+            <a [routerLink]="['/clubs', store.clubId(), 'edit']" class="btn-outline">
+                <app-svg-icon name='edit' size='20px' ariaLabel='Edit icon'></app-svg-icon>
+                Editar
+            </a>
+            <a [routerLink]="['/clubs', store.clubId(), 'matches', 'new']" class="btn-primary">+ Nova Partida</a>
+        }
+    </app-page-header>
+
+    <!-- Tabs (navegação real entre páginas) -->
+    <div class="tabs">
+        @for (tab of tabs; track tab.route) {
+            <a class="tab"
+               [routerLink]="['/clubs', store.clubId(), tab.route]"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{ exact: false }">
+                <app-svg-icon [name]="tab.icon" ariaLabel="Tab icon"></app-svg-icon>
+                {{ tab.label }}
+            </a>
+        }
+    </div>
+
+    <!-- Página filha renderizada aqui -->
+    <router-outlet />
+}

@@ -1,0 +1,63 @@
+/* Shared: buttons, tabs, forms */
+.btn-primary {
+  background: var(--accent); color: #050f09; border: none;
+  padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 700;
+  font-size: 0.85rem; cursor: pointer; text-decoration: none;
+  transition: all 0.2s; display: inline-flex; align-items: center;
+  &:hover { filter: brightness(1.1); }
+}
+
+.btn-outline {
+  background: none; border: 1px solid var(--border); color: var(--text2);
+  padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+  font-weight: 500; text-decoration: none; transition: all 0.2s;
+  &:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+
+.tab {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: none; border: none; color: var(--text2); text-decoration: none;
+  padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+  &:hover { color: var(--text); }
+  &.active { color: var(--accent); border-bottom-color: var(--accent); }
+}
+
+.badge {
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 1px 7px; border-radius: 100px; font-size: 0.72rem; color: var(--text3);
+}
+
+.mini-form-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;
+  h3 { font-size: 0.88rem; font-weight: 600; color: var(--text2); margin-bottom: 0.75rem; }
+}
+
+.inline-form { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+.form-input {
+  background: var(--input-bg); border: 1px solid var(--input-border);
+  border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; padding: 0.55rem 0.85rem; outline: none;
+  flex: 1; min-width: 180px;
+  &::placeholder { color: var(--text3); }
+  &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+}
+
+.rating-inline { display: flex; align-items: center; gap: 0.5rem; }
+.rating-label { font-size: 0.82rem; color: var(--text2); }
+
+.btn-primary-sm {
+  background: var(--accent); color: #050f09; border: none;
+  padding: 0.5rem 1.1rem; border-radius: 8px; font-weight: 700;
+  font-size: 0.82rem; cursor: pointer; white-space: nowrap;
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.empty-msg { text-align: center; padding: 2rem; color: var(--text2); font-size: 0.9rem; }
+
+.tab-content { padding-top: 0.5rem; }

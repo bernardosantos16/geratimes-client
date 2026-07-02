@@ -1,0 +1,15 @@
+<span class="jersey-badge"
+      [style.background]="hexColor"
+      style="border: 0.13rem solid"
+      [style.border-color]="hexColor | contrast"
+      [title]="name"
+>
+      <span class="jersey-name" [style.color]="hexColor | contrast">
+          {{ name }}
+      </span>
+    @if (isGoalkeeper) {
+        <span class="gk-tag">
+            GK
+        </span>
+    }
+</span>

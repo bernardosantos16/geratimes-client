@@ -6,7 +6,7 @@ export interface PlayerUiModel {
     timesChampion: number;
     timesMvp: number;
     position: 'LINE' | 'GOAL';
-    teamId: number | null;
+    teamId?: number | null;
     isGoalkeeper: boolean;
 }
 

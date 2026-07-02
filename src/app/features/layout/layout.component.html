@@ -1,0 +1,81 @@
+<div class="app-shell" [class.sidebar-open]="sidebarOpen()">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a class="logo" routerLink="/dashboard">FERINO</a>
+            <button class="sidebar-close" (click)="sidebarOpen.set(false)" aria-label="Fechar menu">
+                <app-svg-icon name="close" size="24px" ariaLabel="Fechar menu"></app-svg-icon>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            @for (item of navItems; track item.route) {
+                <a
+                        class="nav-item"
+                        [routerLink]="item.route"
+                        routerLinkActive="active"
+                        [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                        (click)="sidebarOpen.set(false)">
+                    <app-svg-icon [name]="item.icon" size="20px" [ariaLabel]="item.label"></app-svg-icon>
+                    <span class="nav-label">{{ item.label }}</span>
+                </a>
+            }
+        </nav>
+
+        <div class="sidebar-footer">
+            @if (auth.currentUser(); as user) {
+                <div class="user-chip">
+                    <div class="user-avatar">{{ user.nickname[0].toUpperCase() }}</div>
+                    <div class="user-info">
+                        <span class="user-name">{{ user.nickname }}</span>
+                        <span class="user-email">{{ user.login }}</span>
+                    </div>
+                </div>
+            }
+            <div class="sidebar-actions">
+                <button
+                        class="icon-btn"
+                        (click)="themeService.toggle()"
+                        [title]="themeService.theme() === 'dark' ? 'Modo claro' : 'Modo escuro'">
+                    @if (themeService.theme() === 'dark') {
+                        <app-svg-icon name="light_mode" size="20px" ariaLabel="Modo claro"></app-svg-icon>
+                    } @else {
+                        <app-svg-icon name="dark_mode" size="20px" ariaLabel="Modo escuro"></app-svg-icon>
+                    }
+                </button>
+                <button class="logout-btn" (click)="logout()">
+                    <app-svg-icon name="logout" size="18px" ariaLabel="Sair"></app-svg-icon>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    @if (sidebarOpen()) {
+        <div class="sidebar-overlay" (click)="sidebarOpen.set(false)"></div>
+    }
+
+    <!-- Main content -->
+    <main class="main-content">
+        <header class="topbar">
+            <button class="icon-btn hamburger" (click)="sidebarOpen.set(true)" aria-label="Abrir menu">
+                <app-svg-icon name="menu" size="24px" ariaLabel="Abrir menu"></app-svg-icon>
+            </button>
+            <a class="topbar-logo" routerLink="/dashboard">FERINO</a>
+            <div class="topbar-right">
+                <button class="icon-btn" (click)="themeService.toggle()">
+                    @if (themeService.theme() === 'dark') {
+                        <app-svg-icon name="light_mode" size="20px" ariaLabel="Modo claro"></app-svg-icon>
+                    } @else {
+                        <app-svg-icon name="dark_mode" size="20px" ariaLabel="Modo escuro"></app-svg-icon>
+                    }
+                </button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <router-outlet/>
+        </div>
+    </main>
+</div>

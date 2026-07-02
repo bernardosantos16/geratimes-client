@@ -131,7 +131,7 @@ export interface MatchParticipantResponseDTO {
   matchId: string;    // uuid
   clubMemberId: number;
   position: MatchPosition;
-  teamId?: number;
+  teamId?: number | null;
 }
 
 // --------------- TEAMS ---------------

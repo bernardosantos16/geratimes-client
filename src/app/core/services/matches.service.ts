@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {
   CreateMatchRequestDTO,
   MatchParticipantResponseDTO,
@@ -44,7 +44,6 @@ export class MatchesService {
     return this.http.get<MatchParticipantResponseDTO[]>(`${this.baseUrl}/${matchId}/participants`);
   }
 
-
   getMatchesByClub(clubId: string, params?: PageableParams): Observable<PageMatchResponseDTO> {
     let httpParams = new HttpParams().set('clubId', clubId);
     if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
@@ -59,5 +58,12 @@ export class MatchesService {
     if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
     if (params?.sort) httpParams = httpParams.set('sort', params.sort);
     return this.http.get<PageMatchResponseDTO>(`${this.baseUrl}/upcoming`, { params: httpParams });
+  }
+
+  matchesPendingResult(clubId: string): Observable<MatchResponseDTO[]> {
+    return this.getMatchesByClub(clubId).pipe(
+        map((page) => page.content),
+        map((matches) => matches.filter((match) => match.clubMemberMvpId === null && match.teamChampionId === null))
+    );
   }
 }

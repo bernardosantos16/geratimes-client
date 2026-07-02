@@ -1,0 +1,26 @@
+<div
+        class="player-row"
+        [class.goalkeeper]="player.isGoalkeeper"
+        [class.not-draggable]="!draggable"
+        [class.drag-over]="isDragOver()"
+        [draggable]="draggable"
+        (dragstart)="onDragStart($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        (dragend)="onDragEnd()"
+>
+
+    @if (draggable) {
+        <span class="drag-handle" aria-hidden="true">⠿</span>
+    }
+
+    <span class="player-name">
+            {{ player.name }}@if (player.isGoalkeeper && !player.name.includes('GK')) { <span class="gk-label"> (GK)</span> }
+        </span>
+
+    @if (showRating) {
+        <app-square-rating [value]="player.rating" />
+    }
+
+</div>

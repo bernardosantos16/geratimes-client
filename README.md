@@ -46,13 +46,13 @@ src/app/
 │   └── services/        # auth, clubs, matches, teams, users, toast, theme
 ├── features/
 │   ├── auth/            # login, register
-│   ├── clubs/           # list, detail (membros + camisas), form
+│   ├── clubs/           # list,  membros,  camisas, partidas, form
 │   ├── dashboard/       # visão geral
 │   ├── layout/          # shell com sidebar responsivo
 │   ├── matches/         # list, detail, form
 │   └── teams/           # geração de times (wizard 3 passos)
 └── shared/
-    ├── components/      # spinner, empty-state, rating-stars, jersey-badge, toast, confirm-dialog
+    ├── components/      # club-detail-nav, spinner, empty-state, rating-stars, jersey-badge, toast, confirm-dialog
     └── pipes/           # matchDate, clubRole, matchPosition
 ```
 

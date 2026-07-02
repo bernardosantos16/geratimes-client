@@ -1,0 +1,22 @@
+<header class="page-header">
+    <div class="header-left">
+        @if (backLink) {
+
+            <a class="back-btn" [routerLink]="[backLink]" [attr.aria-label]="'Voltar'">
+                ←
+            </a>
+        }
+        <div class="title-block">
+            @if (eyebrow) {
+                <span class="eyebrow">{{ eyebrow }}</span>
+            }
+            <h1>{{ title }}</h1>
+            @if (subtitle) {
+                <p class="subtitle">{{ subtitle }}</p>
+            }
+        </div>
+    </div>
+    <div class="header-actions">
+        <ng-content></ng-content>
+    </div>
+</header>

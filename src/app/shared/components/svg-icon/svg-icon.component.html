@@ -1,0 +1,11 @@
+@if (iconExists()) {
+    <span
+            class="icon-wrapper"
+            [innerHTML]="iconHtml()"
+            [style]="styles()"
+            [attr.aria-label]="ariaLabel"
+            role="img">
+      </span>
+} @else {
+    <span class="icon-wrapper icon-missing" [style]="styles()">⚠️</span>
+}
