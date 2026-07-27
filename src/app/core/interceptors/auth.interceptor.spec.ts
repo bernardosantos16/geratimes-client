@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
@@ -6,17 +6,22 @@ import { authInterceptor } from './auth.interceptor';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 
+function req(method: string, url: string): HttpRequest<unknown> {
+  // HttpRequest has narrow literal overloads for method — `as any` avoids
+  // TS2769 on 'POST' | 'PATCH' etc. in tests.
+  return new HttpRequest<unknown>(method as any, url);
+}
+
 describe('authInterceptor', () => {
-  let authMock: { isAuthenticated: ReturnType<typeof vi.fn>; accessToken: ReturnType<typeof vi.fn>; isTokenExpired: ReturnType<typeof vi.fn>; refreshToken: ReturnType<typeof vi.fn>; logoutStarted: boolean; logout: ReturnType<typeof vi.fn>; isRefreshing: boolean; observeRefreshToken: ReturnType<typeof vi.fn>; startRefresh: ReturnType<typeof vi.fn>; completeRefresh: ReturnType<typeof vi.fn>; failRefresh: ReturnType<typeof vi.fn> };
-  let nextMock: ReturnType<typeof vi.fn>;
+  let authMock: any;
+  let nextFn: HttpHandlerFn;
 
   beforeEach(() => {
-    const fakeToken = { accessToken: 'token-abc', tokenType: 'Bearer', expiresInSeconds: 3600 };
     authMock = {
       isAuthenticated: vi.fn(() => true),
       accessToken: vi.fn(() => 'valid-token'),
       isTokenExpired: vi.fn(() => false),
-      refreshToken: vi.fn(() => of(fakeToken)),
+      refreshToken: vi.fn(() => of({ accessToken: 'token-abc', tokenType: 'Bearer', expiresInSeconds: 3600 })),
       logoutStarted: false,
       logout: vi.fn(() => of(void 0)),
       isRefreshing: false,
@@ -25,7 +30,7 @@ describe('authInterceptor', () => {
       completeRefresh: vi.fn(),
       failRefresh: vi.fn(),
     };
-    nextMock = vi.fn((req: HttpRequest<unknown>) => of({ type: 0 }));
+    nextFn = vi.fn(() => of({ type: 0 })) as unknown as HttpHandlerFn;
 
     TestBed.configureTestingModule({
       providers: [
@@ -35,44 +40,38 @@ describe('authInterceptor', () => {
     });
   });
 
-  function runInterceptor(req: HttpRequest<unknown>) {
-    return TestBed.runInInjectionContext(() => authInterceptor(req, nextMock));
+  function intercept(r: HttpRequest<unknown>) {
+    return TestBed.runInInjectionContext(() => authInterceptor(r, nextFn));
   }
 
   it('should pass public endpoints through without auth header', () => {
-    const req = new HttpRequest('POST', 'http://localhost:8080/api/auth/login');
-    runInterceptor(req).subscribe();
-    expect(nextMock).toHaveBeenCalled();
-    const forwardedReq = nextMock.mock.calls[0][0] as HttpRequest<unknown>;
-    expect(forwardedReq.headers.has('Authorization')).toBe(false);
+    intercept(req('POST', 'http://localhost:8080/api/auth/login')).subscribe();
+    const fwd = (nextFn as any).mock.calls[0][0] as HttpRequest<unknown>;
+    expect(fwd.headers.has('Authorization')).toBe(false);
   });
 
   it('should add Authorization header for non-public requests when token exists', () => {
-    const req = new HttpRequest('GET', 'http://localhost:8080/api/clubs');
-    runInterceptor(req).subscribe();
-    const forwardedReq = nextMock.mock.calls[0][0] as HttpRequest<unknown>;
-    expect(forwardedReq.headers.get('Authorization')).toBe('Bearer valid-token');
+    intercept(req('GET', 'http://localhost:8080/api/clubs')).subscribe();
+    const fwd = (nextFn as any).mock.calls[0][0] as HttpRequest<unknown>;
+    expect(fwd.headers.get('Authorization')).toBe('Bearer valid-token');
   });
 
   it('should add withCredentials for API requests', () => {
-    const req = new HttpRequest('GET', 'http://localhost:8080/api/clubs');
-    runInterceptor(req).subscribe();
-    const forwardedReq = nextMock.mock.calls[0][0] as HttpRequest<unknown>;
-    expect(forwardedReq.withCredentials).toBe(true);
+    intercept(req('GET', 'http://localhost:8080/api/clubs')).subscribe();
+    const fwd = (nextFn as any).mock.calls[0][0] as HttpRequest<unknown>;
+    expect(fwd.withCredentials).toBe(true);
   });
 
   it('should not add withCredentials for non-API requests', () => {
-    const req = new HttpRequest('GET', 'https://external-api.com/data');
-    runInterceptor(req).subscribe();
-    const forwardedReq = nextMock.mock.calls[0][0] as HttpRequest<unknown>;
-    expect(forwardedReq.withCredentials).toBe(false);
+    intercept(req('GET', 'https://external-api.com/data')).subscribe();
+    const fwd = (nextFn as any).mock.calls[0][0] as HttpRequest<unknown>;
+    expect(fwd.withCredentials).toBe(false);
   });
 
   it('should allow POST /api/users without auth header (user creation)', () => {
-    const req = new HttpRequest('POST', 'http://localhost:8080/api/users');
-    runInterceptor(req).subscribe();
-    const forwardedReq = nextMock.mock.calls[0][0] as HttpRequest<unknown>;
-    expect(forwardedReq.headers.has('Authorization')).toBe(false);
+    intercept(req('POST', 'http://localhost:8080/api/users')).subscribe();
+    const fwd = (nextFn as any).mock.calls[0][0] as HttpRequest<unknown>;
+    expect(fwd.headers.has('Authorization')).toBe(false);
   });
 
   it('should refresh token proactively if token is expired', () => {
@@ -80,41 +79,34 @@ describe('authInterceptor', () => {
     authMock.isTokenExpired.mockReturnValue(true);
     authMock.refreshToken.mockReturnValue(of({ accessToken: 'new-token', tokenType: 'Bearer', expiresInSeconds: 3600 }));
 
-    const req = new HttpRequest('GET', 'http://localhost:8080/api/clubs');
-    runInterceptor(req).subscribe(() => {
+    intercept(req('GET', 'http://localhost:8080/api/clubs')).subscribe(() => {
       expect(authMock.completeRefresh).toHaveBeenCalledWith('new-token');
     });
   });
 
   it('should show toast on 403 error', () => {
-    nextMock.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
-    const req = new HttpRequest('GET', 'http://localhost:8080/api/admin');
-    runInterceptor(req).subscribe({
+    (nextFn as any).mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
+    intercept(req('GET', 'http://localhost:8080/api/admin')).subscribe({
       error: () => {
-        const toast = TestBed.inject(ToastService);
-        expect(toast.error).toHaveBeenCalledWith('Acesso negado.');
+        expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith('Acesso negado.');
       },
     });
   });
 
   it('should show toast on network error (status 0)', () => {
-    nextMock.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
-    const req = new HttpRequest('GET', 'http://localhost:8080/api/clubs');
-    runInterceptor(req).subscribe({
+    (nextFn as any).mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    intercept(req('GET', 'http://localhost:8080/api/clubs')).subscribe({
       error: () => {
-        const toast = TestBed.inject(ToastService);
-        expect(toast.error).toHaveBeenCalledWith('Sem conexão com o servidor.');
+        expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith('Sem conexão com o servidor.');
       },
     });
   });
 
   it('should show toast on 500+ error', () => {
-    nextMock.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
-    const req = new HttpRequest('GET', 'http://localhost:8080/api/clubs');
-    runInterceptor(req).subscribe({
+    (nextFn as any).mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+    intercept(req('GET', 'http://localhost:8080/api/clubs')).subscribe({
       error: () => {
-        const toast = TestBed.inject(ToastService);
-        expect(toast.error).toHaveBeenCalledWith('Erro interno do servidor. Tente novamente.');
+        expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith('Erro interno do servidor. Tente novamente.');
       },
     });
   });
