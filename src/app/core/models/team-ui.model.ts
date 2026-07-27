@@ -14,6 +14,7 @@ export interface TeamUiModel {
     id: number;
     jerseyName: string;
     jerseyColor: string;
+    score: number | null;
     players: PlayerUiModel[];
     goalkeeper: PlayerUiModel | null;
 }

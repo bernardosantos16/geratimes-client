@@ -1,0 +1,39 @@
+<div class="modal-backdrop" (click)="onBackdropClick()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Editar Membro</h2>
+      <button class="modal-close" (click)="dismiss.emit()">×</button>
+    </div>
+
+    <form [formGroup]="form" class="modal-body">
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" formControlName="name" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label>Nível</label>
+        <app-square-rating
+          [value]="form.controls.rating.value"
+          [interactive]="true"
+          (ratingChange)="form.patchValue({ rating: $event })">
+        </app-square-rating>
+      </div>
+      <div class="form-group">
+        <label>Vezes MVP</label>
+        <input type="number" formControlName="timesMvp" class="form-input" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Vezes Campeão</label>
+        <input type="number" formControlName="timesChampion" class="form-input" min="0" />
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="dismiss.emit()">Cancelar</button>
+      <button class="btn-primary" [disabled]="form.invalid" (click)="save.emit(form.getRawValue())">Salvar</button>
+      @if (!isDirector) {
+        <button class="btn-danger" (click)="delete.emit()">Excluir</button>
+      }
+    </div>
+  </div>
+</div>

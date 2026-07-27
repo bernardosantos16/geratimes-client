@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlayerUiModel } from '@core/models/team-ui.model';
 import { SquareRatingComponent } from '../square-rating/square-rating.component';
@@ -7,6 +7,7 @@ import {dragSwapState} from "@shared/components/team-card/drag-state";
 @Component({
     selector: 'app-player-item',
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [CommonModule, SquareRatingComponent],
     templateUrl: 'player-item.component.html',
     styleUrls: ['player-item.component.scss']

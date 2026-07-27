@@ -45,7 +45,7 @@ export class ClubsListComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (clubs) => { this.clubs.set(clubs); this.loading.set(false); },
-      error: () => { this.toast.error('Erro ao carregar clubes.'); this.loading.set(false); },
+      error: (err: unknown) => { this.toast.error('Erro ao carregar clubes.'); this.loading.set(false); },
     });
   }
 
@@ -66,7 +66,7 @@ export class ClubsListComponent implements OnInit {
         this.clubs.update((c) => c.filter((club) => club.id !== id));
         this.pendingDeleteId.set(null);
       },
-      error: () => this.toast.error('Erro ao excluir clube.'),
+      error: (err: unknown) => this.toast.error('Erro ao excluir clube.'),
     });
   }
 

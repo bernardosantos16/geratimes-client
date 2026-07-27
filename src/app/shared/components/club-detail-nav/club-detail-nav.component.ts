@@ -8,7 +8,10 @@ import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubContextService } from '@core/services/club-context.service';
 import { ClubDetailStore } from '@core/services/club-detail.store';
-import { ClubRole } from '@core/models/api.models';
+import {
+    ClubRole,
+    ClubResponseDTO,
+} from '@core/models/api.models';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { SvgIconComponent } from '@shared/components/svg-icon/svg-icon.component';
@@ -64,7 +67,7 @@ export class ClubDetailNavComponent implements OnInit {
                 }
                 this.store.loading.set(false);
             },
-            error: () => {
+            error: (err: unknown) => {
                 this.toast.error('Erro ao carregar dados do clube.');
                 this.store.loading.set(false);
             },
@@ -79,8 +82,8 @@ export class ClubDetailNavComponent implements OnInit {
     }
 
     private resolveRoleFromClubLists(
-        directorClubs: any[],
-        memberClubs: any[]
+        directorClubs: ClubResponseDTO[],
+        memberClubs: ClubResponseDTO[]
     ): ClubRole | null {
         const clubId = this.store.clubId();
         if (directorClubs.some((club) => club.id === clubId)) return 'DIRECTOR';

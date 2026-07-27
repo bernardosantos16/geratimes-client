@@ -142,7 +142,7 @@
   gap: 0.5rem;
   width: 100%;
   background: var(--accent);
-  color: #050f09;
+  color: var(--accent-text);
   border: none;
   padding: 0.75rem;
   border-radius: 8px;
@@ -163,7 +163,7 @@
 .spinner {
   width: 16px; height: 16px;
   border: 2px solid rgba(0,0,0,0.2);
-  border-top-color: #050f09;
+  border-top-color: var(--accent-text);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

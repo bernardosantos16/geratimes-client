@@ -1,7 +1,6 @@
-import {ChangeDetectionStrategy, Component, computed, inject, DestroyRef, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, DestroyRef, OnInit, signal, ElementRef, viewChild} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {MatchesService} from '@core/services/matches.service';
 import {ClubsService} from '@core/services/clubs.service';
@@ -20,16 +19,18 @@ import {ConfirmDialogComponent} from '@shared/components/confirm-dialog/confirm-
 import {TeamCardComponent} from '@shared/components/team-card/team-card.component';
 import {MatchDatePipe} from '@shared/pipes/app.pipes';
 import {PlayerUiModel, TeamUiModel} from '@core/models/team-ui.model';
-import {forkJoin} from 'rxjs';
+import {forkJoin, switchMap} from 'rxjs';
 import {TeamsService} from "@core/services/teams.service";
+import { fallbackTeamColor } from '@core/utils/team-color.utils';
+import { MatchResultFormComponent } from './match-result-form/match-result-form.component';
 
 @Component({
     selector: 'app-match-detail-export',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, RouterModule,
         PageHeaderComponent, LoadingSpinnerComponent, ConfirmDialogComponent,
-        TeamCardComponent, MatchDatePipe,
+        TeamCardComponent, MatchDatePipe, MatchResultFormComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: 'match-detail-export.component.html',
@@ -45,7 +46,6 @@ export class MatchDetailComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
 
     readonly loading = signal(true);
-    readonly loadingMembers = signal(true);
     readonly swapping = signal(false);
     readonly match = signal<MatchResponseDTO | null>(null);
     readonly participants = signal<MatchParticipantResponseDTO[]>([]);
@@ -59,8 +59,10 @@ export class MatchDetailComponent implements OnInit {
     readonly mvpMemberId = signal<number | null>(null);
     private club = signal<ClubResponseDTO | null>(null);
 
-    clubName = () => this.club()?.name ?? '';
-    isUpcoming = () => this.match() ? new Date(this.match()!.dateTime) > new Date() : false;
+    readonly teamsSection = viewChild<ElementRef>('teamsSection');
+
+    readonly clubName = computed(() => this.club()?.name ?? '');
+    readonly isUpcoming = computed(() => this.match() ? new Date(this.match()!.dateTime) > new Date() : false);
     readonly hasResult = computed(() => {
         const match = this.match();
         return !!match?.teamChampionId && !!match?.clubMemberMvpId;
@@ -107,8 +109,9 @@ export class MatchDetailComponent implements OnInit {
 
         return {
             id: 0,
+            score: null,
             jerseyName: jersey?.name ?? 'Goleiros',
-            jerseyColor: jersey?.hexColor ?? this.fallbackTeamColor(this.teams().length),
+            jerseyColor: jersey?.hexColor ?? fallbackTeamColor(this.teams().length),
             players: gks,
             goalkeeper: null,
         };
@@ -117,46 +120,39 @@ export class MatchDetailComponent implements OnInit {
     ngOnInit(): void {
         const matchId = this.activatedRoute.snapshot.paramMap.get('id')!;
 
-        forkJoin({
-            match: this.matchesService.getMatch(matchId),
-            participants: this.matchesService.getParticipants(matchId),
-            teams: this.teamsService.getTeamsByMatch(matchId),
-            directorClubs: this.clubsService.getClubs('DIRECTOR'),
-        }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: ({ match, participants, teams, directorClubs }) => {
+        this.matchesService.getMatch(matchId).pipe(
+            takeUntilDestroyed(this.destroyRef),
+            switchMap((match) => {
                 this.match.set(match);
-                this.participants.set(participants);
-                this.teams.set(teams.content);
-                this.canManageResult.set(directorClubs.some((club) => club.id === match.clubId));
                 this.championTeamId.set(match.teamChampionId ?? null);
                 this.mvpMemberId.set(match.clubMemberMvpId ?? null);
-                this.loading.set(false);
-                this.loadClubData(match.clubId);
 
-                // Pre-select participants already in match
-                const ids = new Set(participants.map((p) => p.clubMemberId));
-                this.selectedIds.set(ids);
-            },
-            error: () => {
-                this.toast.error('Erro ao carregar partida.');
-                this.loading.set(false);
-            },
-        });
-    }
-
-    private loadClubData(clubId: string): void {
-        forkJoin({
-            club: this.clubsService.getClubById(clubId),
-            members: this.clubsService.getMembers(clubId, { size: 200 }),
-            jerseys: this.clubsService.getJerseys(clubId),
-        }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: ({ club, members, jerseys }) => {
+                return forkJoin({
+                    participants: this.matchesService.getParticipants(matchId),
+                    teams: this.teamsService.getTeamsByMatch(matchId),
+                    directorClubs: this.clubsService.getClubs('DIRECTOR'),
+                    club: this.clubsService.getClubById(match.clubId),
+                    members: this.clubsService.getMembers(match.clubId, { size: 200 }),
+                    jerseys: this.clubsService.getJerseys(match.clubId),
+                });
+            }),
+        ).subscribe({
+            next: ({ participants, teams, directorClubs, club, members, jerseys }) => {
+                this.participants.set(participants);
+                this.teams.set(teams.content);
+                this.canManageResult.set(directorClubs.some((club) => club.id === this.match()!.clubId));
                 this.club.set(club);
                 this.clubMembers.set(members.content);
                 this.jerseys.set(jerseys);
-                this.loadingMembers.set(false);
+                this.loading.set(false);
+
+                const ids = new Set(participants.map((p) => p.clubMemberId));
+                this.selectedIds.set(ids);
             },
-            error: () => this.loadingMembers.set(false),
+            error: (err: unknown) => {
+                this.toast.error('Erro ao carregar partida.');
+                this.loading.set(false);
+            },
         });
     }
 
@@ -198,19 +194,12 @@ export class MatchDetailComponent implements OnInit {
         return this.jerseys().find(j => j.id === jerseyId)?.name ?? 'Unknown Jersey';
     }
 
-    setChampionTeamId(value: unknown): void {
+    onChampionTeamChange(value: unknown): void {
         this.championTeamId.set(this.toNullableNumber(value));
     }
 
-    setMvpMemberId(value: unknown): void {
+    onMvpMemberChange(value: unknown): void {
         this.mvpMemberId.set(this.toNullableNumber(value));
-    }
-
-    canSaveResult(): boolean {
-        return !this.savingResult()
-            && !this.isUpcoming()
-            && !!this.championTeamId()
-            && !!this.mvpMemberId();
     }
 
     saveResult(): void {
@@ -231,7 +220,6 @@ export class MatchDetailComponent implements OnInit {
                 this.championTeamId.set(updatedMatch.teamChampionId ?? teamChampionId);
                 this.mvpMemberId.set(updatedMatch.clubMemberMvpId ?? clubMemberMvpId);
                 this.savingResult.set(false);
-                this.loadClubData(updatedMatch.clubId);
                 this.toast.success('Resultado salvo.');
             },
             error: (err) => {
@@ -287,8 +275,9 @@ export class MatchDetailComponent implements OnInit {
         return {
             id: team.id,
             jerseyName: jersey?.name ?? `Time ${index + 1}`,
-            jerseyColor: jersey?.hexColor ?? this.fallbackTeamColor(index),
+            jerseyColor: jersey?.hexColor ?? fallbackTeamColor(index),
             players: linePlayers,
+            score: team.score,
             goalkeeper: goalkeeper ? this.toPlayerModel(goalkeeper, team.id) : null,
         };
     }
@@ -312,11 +301,6 @@ export class MatchDetailComponent implements OnInit {
         return this.jerseys().find((jersey) => jersey.id === jerseyId) ?? this.jerseys().filter((j) => !j.isGoalkeeperJersey)[index];
     }
 
-    private fallbackTeamColor(index: number): string {
-        const colors = ['#1565c0', '#555555', '#00a844', '#d63050', '#f39c12', '#7c4dff'];
-        return colors[index % colors.length];
-    }
-
     private toNullableNumber(value: unknown): number | null {
         if (value === null || value === undefined || value === '') {
             return null;
@@ -324,6 +308,41 @@ export class MatchDetailComponent implements OnInit {
 
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    copyTeamsToClipboard(): void {
+        const sections: string[] = [];
+
+        for (const team of this.teamCards()) {
+            const teamLines: string[] = [];
+            teamLines.push(team.jerseyName.toUpperCase());
+            teamLines.push('');
+            if (team.goalkeeper) {
+                teamLines.push(`${team.goalkeeper.name} 🧤`);
+            }
+            for (const player of team.players) {
+                teamLines.push(player.name);
+            }
+            sections.push(teamLines.join('\n'));
+        }
+
+        const freeGks = this.freeGoalkeepersCard();
+        if (freeGks) {
+            const gkLines: string[] = [];
+            gkLines.push('GOLEIROS');
+            gkLines.push('');
+            for (const player of freeGks.players) {
+                gkLines.push(player.name);
+            }
+            sections.push(gkLines.join('\n'));
+        }
+
+        const text = sections.join('\n\n___\n\n');
+        navigator.clipboard.writeText(text).then(() => {
+            this.toast.success('Times copiados!');
+        }).catch(() => {
+            this.toast.error('Erro ao copiar.');
+        });
     }
 
     deleteMatch(): void {
@@ -334,9 +353,9 @@ export class MatchDetailComponent implements OnInit {
         ).subscribe({
             next: () => {
                 this.toast.success('Partida excluída.');
-                this.router.navigate(['/clubs', this.match()!.clubId, 'matches']);
+                this.router.navigate(['/clubs', this.match()!.clubId, 'matches']).catch(() => {});
             },
-            error: () => this.toast.error('Erro ao excluir partida.'),
+            error: (err: unknown) => this.toast.error('Erro ao excluir partida.'),
         });
     }
 

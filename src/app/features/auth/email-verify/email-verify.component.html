@@ -3,7 +3,20 @@
         <div class="auth-header">
             <div class="auth-logo">FERINO</div>
             <h1>Verificar Email</h1>
-            <p>Comece a organizar seu futebol agora.</p>
+            <p>Insira o código de 6 dígitos enviado para seu email.</p>
+        </div>
+
+        <!-- Email display / input -->
+        <div class="email-section">
+            @if (hasStoredEmail()) {
+                <div class="email-display">
+                    <span class="email-label">Enviado para:</span>
+                    <span class="email-value">{{ maskedEmail() }}</span>
+                    <button type="button" class="email-change-btn" (click)="useAnotherEmail()">
+                        Não é seu email?
+                    </button>
+                </div>
+            }
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
@@ -17,7 +30,7 @@
                                 #inputBox
                                 type="text"
                                 inputmode="numeric"
-                                pattern="[0-8]*"
+                                pattern="[0-9]*"
                                 maxlength="1"
                                 class="otp-input"
                                 (keydown)="onKeyDown($event, $index)"
@@ -35,9 +48,30 @@
 
             <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
                 @if (loading()) { <span class="spinner"></span> }
-                {{ loading() ? 'Verificando...' : 'Verificar conta' }}
+                {{ loading() ? 'Verificando...' : 'Verificar código' }}
             </button>
         </form>
+
+        <div class="resend-section">
+            @if (canResend()) {
+                <button
+                    class="btn-resend"
+                    (click)="resendCode()"
+                    [disabled]="resendLoading() || (!hasStoredEmail() && emailForm.invalid)"
+                >
+                    @if (resendLoading()) { <span class="spinner"></span> }
+                    {{ resendLoading() ? 'Enviando...' : 'Reenviar código' }}
+                </button>
+            } @else {
+                <p class="resend-timer">
+                    Solicite um novo código em <span class="countdown">{{ countdownDisplay() }}</span>
+                </p>
+            }
+
+            @if (resendError()) {
+                <div class="server-error">{{ resendError() }}</div>
+            }
+        </div>
 
     </div>
     <div class="auth-bg"><div class="bg-glow"></div></div>

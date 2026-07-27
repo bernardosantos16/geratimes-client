@@ -20,10 +20,23 @@ export interface LogoutRequestDTO {
 
 // --------------- USERS ---------------
 export interface CreateUserRequestDTO {
-  name: string;       // max 250
-  nickname: string;   // max 100
+  name: string;              // max 250
+  nickname: string;          // max 100
+  password: string;          // min 8, max 72
+  registrationToken: string; // JWT obtained in step 2 (valid 30 min)
+}
+
+export interface SendEmailTokenRequestDTO {
   login: string;      // email, max 100
-  password: string;   // min 8, max 72
+}
+
+export interface VerifyEmailRequestDTO {
+  login: string;      // email used in step 1
+  token: string;      // 6-digit code
+}
+
+export interface VerifyEmailResponseDTO {
+  registrationToken: string;  // JWT valid for 30 min, used in step 3
 }
 
 export interface UserResponseDTO {
@@ -108,6 +121,15 @@ export interface CreateMatchRequestDTO {
   dateTime: string;   // ISO date-time
 }
 
+export interface BatchMatchRequestDTO {
+  clubId: string;     // uuid
+  dayOfWeek: string;  // MONDAY | TUESDAY | ...
+  time: string;       // HH:mm
+  startDate: string;  // yyyy-MM-dd
+  endDate: string;    // yyyy-MM-dd
+  zoneId: string;     // e.g. America/Sao_Paulo
+}
+
 export interface MatchResponseDTO {
   id: string;         // uuid
   clubId: string;     // uuid
@@ -152,6 +174,7 @@ export interface TeamResponseDTO {
   id: number;
   matchId: string;    // uuid
   clubJerseyId?: number | null;
+  score: number;
 }
 
 export interface PageTeamResponseDTO extends PageDTO<TeamResponseDTO> {}
@@ -166,6 +189,7 @@ export interface GenerateTeamsRequestDTO {
 
 export interface GeneratedTeamDTO {
   teamId: number;
+  score: number
   lineMemberIds: number[];
   goalkeeperMemberId?: number;
 }
@@ -215,6 +239,7 @@ export interface ProblemDetail {
   detail?: string;
   instance?: string;
   properties?: Record<string, unknown>;
+  errors?: { field: string; message: string }[];
 }
 
 // --------------- UI HELPERS ---------------

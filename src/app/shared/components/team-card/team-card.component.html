@@ -5,7 +5,7 @@
             <span class="team-label">{{ team.jerseyName }}</span>
             <span class="team-meta">{{ playerCount() }} jogadores</span>
         </div>
-        <span class="pts">{{ getTeamRatingSum() }}pts</span>
+        @if(showRating){<span class="pts">{{ team.score | number:'1.2-2' }} pts</span>}
     </header>
 
     <div class="players-list">
@@ -13,6 +13,7 @@
             <app-player-item
                     [player]="player"
                     [draggable]="enableSwap"
+                    [showRating]="showRating"
                     (swapRequested)="onPlayerSwap($event)"
 
             />

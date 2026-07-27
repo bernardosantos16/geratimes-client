@@ -22,18 +22,31 @@
         <div class="empty-msg">Nenhum membro cadastrado.</div>
     } @else {
 
-        <span class="members-length">Número de membros: {{store.members().length}}</span>
+        <span class="members-length">Número de membros: {{sortedMembers().length}}</span>
 
-        <div class="members-table">
+        <!-- Desktop: table view -->
+        <div class="members-table desktop-only">
             <div class="table-header">
-                <span class="col-name">Nome</span>
+                <button class="col-sort col-name" (click)="setSort('name')">
+                    Nome
+                    <span class="sort-arrow">{{ sortIndicator('name') }}</span>
+                </button>
                 @if (store.userRole() === 'DIRECTOR') {
-                    <span class="col-rating">Nível</span>
+                    <button class="col-sort col-rating" (click)="setSort('rating')">
+                        Nível
+                        <span class="sort-arrow">{{ sortIndicator('rating') }}</span>
+                    </button>
                 }
-                <span class="col-stat">MVP</span>
-                <span class="col-stat">Campeão</span>
+                <button class="col-sort col-stat" (click)="setSort('timesMvp')">
+                    MVP
+                    <span class="sort-arrow">{{ sortIndicator('timesMvp') }}</span>
+                </button>
+                <button class="col-sort col-stat" (click)="setSort('timesChampion')">
+                    Campeão
+                    <span class="sort-arrow">{{ sortIndicator('timesChampion') }}</span>
+                </button>
             </div>
-            @for (member of store.members(); track $index) {
+            @for (member of sortedMembers(); track $index) {
                 <div class="table-row" [class.clickable]="store.userRole() === 'DIRECTOR'"
                      (click)="store.userRole() === 'DIRECTOR' && openEditMember(member)">
                     <span class="member-name">{{ member.name }}
@@ -51,48 +64,29 @@
                 </div>
             }
         </div>
+
+        <!-- Mobile: card grid -->
+        <div class="members-cards">
+            @for (member of sortedMembers(); track $index) {
+                <app-member-card
+                    [member]="member"
+                    [clickable]="store.userRole() === 'DIRECTOR'"
+                    [showRating]="store.userRole() === 'DIRECTOR'"
+                    (selected)="openEditMember($event)"
+                />
+            }
+        </div>
     }
 </div>
 
 <!-- Edit Member Modal -->
 @if (editingMember()) {
-    <div class="modal-backdrop" (click)="closeEditMember()">
-        <div class="modal-dialog" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h2>Editar Membro</h2>
-                <button class="modal-close" (click)="closeEditMember()">×</button>
-            </div>
-            <form [formGroup]="editMemberForm" class="modal-body">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text" formControlName="name" class="form-input" />
-                </div>
-                <div class="form-group">
-                    <label>Nível</label>
-                    <app-square-rating
-                            [value]="editMemberForm.get('rating')?.value || 0"
-                            [interactive]="true"
-                            (ratingChange)="editMemberForm.patchValue({ rating: $event })">
-                    </app-square-rating>
-                </div>
-                <div class="form-group">
-                    <label>Vezes MVP</label>
-                    <input type="number" formControlName="timesMvp" class="form-input" min="0" />
-                </div>
-                <div class="form-group">
-                    <label>Vezes Campeão</label>
-                    <input type="number" formControlName="timesChampion" class="form-input" min="0" />
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn-cancel" (click)="closeEditMember()">Cancelar</button>
-                <button class="btn-primary" [disabled]="editMemberForm.invalid" (click)="saveMemberChanges()">Salvar</button>
-                @if (editingMember()?.clubRole !== 'DIRECTOR') {
-                    <button class="btn-danger" (click)="deleteMemberConfirm()">Excluir</button>
-                }
-            </div>
-        </div>
-    </div>
+    <app-edit-member-modal
+        [member]="editingMember()!"
+        [isDirector]="editingMember()!.clubRole === 'DIRECTOR'"
+        (save)="saveMemberChanges($event)"
+        (delete)="deleteMemberConfirm()"
+        (dismiss)="closeEditMember()" />
 }
 
 <app-confirm-dialog

@@ -1,14 +1,16 @@
-import { Component, inject, signal, OnInit, ChangeDetectionStrategy, DestroyRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy, DestroyRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubDetailStore } from '@core/services/club-detail.store';
-import { ClubMemberResponseDTO } from '@core/models/api.models';
+import { ClubMemberResponseDTO, AddClubMemberRequestDTO, UpdateClubMemberRequestDTO } from '@core/models/api.models';
 import { SquareRatingComponent } from '@shared/components/square-rating/square-rating.component';
 import { ClubRolePipe } from '@shared/pipes/app.pipes';
 import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confirm-dialog.component';
+import { MemberCardComponent } from '@shared/components/member-card/member-card.component';
+import { EditMemberModalComponent, SaveMemberEvent } from '../edit-member-modal/edit-member-modal.component';
 
 @Component({
     selector: 'app-club-members',
@@ -16,6 +18,7 @@ import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confir
     imports: [
         CommonModule, ReactiveFormsModule,
         SquareRatingComponent, ClubRolePipe, ConfirmDialogComponent,
+        MemberCardComponent, EditMemberModalComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: 'club-members.component.html',
@@ -24,7 +27,7 @@ import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confir
 export class ClubMembersComponent implements OnInit {
     private readonly clubsService = inject(ClubsService);
     private readonly toast = inject(ToastService);
-    private readonly fb = inject(FormBuilder);
+    private readonly fb = inject(FormBuilder).nonNullable;
     private readonly destroyRef = inject(DestroyRef);
     readonly store = inject(ClubDetailStore);
 
@@ -33,16 +36,37 @@ export class ClubMembersComponent implements OnInit {
     readonly editingMember = signal<ClubMemberResponseDTO | null>(null);
     protected readonly memberToDelete = signal<ClubMemberResponseDTO | null>(null);
 
+    readonly sortField = signal<'name' | 'rating' | 'timesMvp' | 'timesChampion'>('name');
+    readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
+    readonly sortedMembers = computed(() => {
+        const members = this.store.members();
+        const field = this.sortField();
+        const dir = this.sortDirection();
+
+        return [...members].sort((a, b) => {
+            let cmp = 0;
+            switch (field) {
+                case 'name':
+                    cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+                    break;
+                case 'rating':
+                    cmp = (a.rating ?? 0) - (b.rating ?? 0);
+                    break;
+                case 'timesMvp':
+                    cmp = (a.timesMvp ?? 0) - (b.timesMvp ?? 0);
+                    break;
+                case 'timesChampion':
+                    cmp = (a.timesChampion ?? 0) - (b.timesChampion     ?? 0);
+                    break;
+            }
+            return dir === 'asc' ? cmp : -cmp;
+        });
+    });
+
     readonly memberForm = this.fb.group({
         name: ['', [Validators.required, Validators.maxLength(250)]],
         rating: [3, [Validators.min(1), Validators.max(5)]],
-    });
-
-    readonly editMemberForm = this.fb.group({
-        name: ['', [Validators.required, Validators.maxLength(250)]],
-        rating: [1, [Validators.min(1), Validators.max(5)]],
-        timesMvp: [0, [Validators.min(0)]],
-        timesChampion: [0, [Validators.min(0)]],
     });
 
     ngOnInit(): void {
@@ -51,53 +75,56 @@ export class ClubMembersComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (res) => this.store.members.set(res.content),
-                error: () => this.toast.error('Erro ao carregar membros.'),
+                error: (err: unknown) => this.toast.error('Erro ao carregar membros.'),
             });
+    }
+
+    setSort(field: 'name' | 'rating' | 'timesMvp' | 'timesChampion'): void {
+        if (this.sortField() === field) {
+            this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
+        } else {
+            this.sortField.set(field);
+            this.sortDirection.set('asc');
+        }
+    }
+
+    sortIndicator(field: string): string {
+        if (this.sortField() !== field) return '';
+        return this.sortDirection() === 'asc' ? '▲' : '▼';
     }
 
     addMember(): void {
         if (this.memberForm.invalid) return;
-        this.clubsService.addMember(this.store.clubId(), this.memberForm.getRawValue() as any)
+        this.clubsService.addMember(this.store.clubId(), this.memberForm.getRawValue() as AddClubMemberRequestDTO)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (m) => {
-                    this.store.members.update((arr) =>
-                        [...arr, m].sort((a, b) =>
-                            a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
-                        )
-                    );
+                    this.store.members.update((arr) => [...arr, m]);
                     this.memberForm.reset({ name: '', rating: 3 });
                     this.toast.success('Membro adicionado!');
                 },
-                error: () => this.toast.error('Erro ao adicionar membro.'),
+                error: (err: unknown) => this.toast.error('Erro ao adicionar membro.'),
             });
     }
 
     openEditMember(member: ClubMemberResponseDTO): void {
         this.editingMember.set(member);
-        this.editMemberForm.patchValue({
-            name: member.name,
-            rating: member.rating ?? 1,
-            timesMvp: member.timesMvp ?? 0,
-            timesChampion: member.timesChampion ?? 0,
-        });
     }
 
     closeEditMember(): void {
         this.editingMember.set(null);
-        this.editMemberForm.reset();
     }
 
-    saveMemberChanges(): void {
-        if (!this.editingMember() || this.editMemberForm.invalid) return;
+    saveMemberChanges(saveEvent: SaveMemberEvent): void {
+        if (!this.editingMember()) return;
         const memberId = this.editingMember()!.id;
-        const formValue = this.editMemberForm.getRawValue();
-        this.clubsService.updateMember(this.store.clubId(), memberId, {
-            name: formValue.name,
-            rating: formValue.rating,
-            timesMvp: formValue.timesMvp,
-            timesChampion: formValue.timesChampion,
-        } as any)
+        const dto: UpdateClubMemberRequestDTO = {
+            name: saveEvent.name,
+            rating: saveEvent.rating,
+            timesMvp: saveEvent.timesMvp,
+            timesChampion: saveEvent.timesChampion,
+        };
+        this.clubsService.updateMember(this.store.clubId(), memberId, dto)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (updatedMember) => {
@@ -107,7 +134,7 @@ export class ClubMembersComponent implements OnInit {
                     this.closeEditMember();
                     this.toast.success('Membro atualizado!');
                 },
-                error: () => this.toast.error('Erro ao atualizar membro.'),
+                error: (err: unknown) => this.toast.error('Erro ao atualizar membro.'),
             });
     }
 
@@ -129,7 +156,7 @@ export class ClubMembersComponent implements OnInit {
                     this.memberToDelete.set(null);
                     this.toast.success('Membro removido.');
                 },
-                error: () => this.toast.error('Erro ao remover membro.'),
+                error: (err: unknown) => this.toast.error('Erro ao remover membro.'),
             });
     }
 }

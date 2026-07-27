@@ -5,39 +5,94 @@
 
 <div class="form-card">
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-        <div class="form-grid">
-            <div class="form-group full">
-                <label for="name">Nome do clube *</label>
-                <input id="name" type="text" formControlName="name"
-                       placeholder="Ex: Ferino FC" class="form-input" />
-                @if (f['name'].invalid && f['name'].touched) {
-                    <span class="form-error">Nome é obrigatório</span>
-                }
-            </div>
 
-            <div class="form-group full">
-                <label for="nickname">
-                    Apelido
-                    <span class="hint">(usado para identificação)</span>
-                </label>
-                <input id="nickname" type="text" formControlName="nickname"
-                       placeholder="Ex: ferino" class="form-input" />
-                @if (f['nickname'].invalid && f['nickname'].touched) {
-                    <span class="form-error">Apelido deve ter entre 3 e 24 caracteres</span>
-                }
+        @if (!isEdit()) {
+            <app-step-indicator [steps]="clubSteps" [currentStep]="currentStepKey" />
+        }
+
+        @if (step() === 1) {
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label for="name">Nome do clube *</label>
+                    <input id="name" type="text" formControlName="name"
+                           placeholder="Ex: Ferino FC" class="form-input" />
+                    @if (f['name'].invalid && f['name'].touched) {
+                        <span class="form-error">Nome é obrigatório</span>
+                    }
+                </div>
+
+                <div class="form-group full">
+                    <label for="nickname">
+                        Apelido
+                        <span class="hint">(usado para identificação)</span>
+                    </label>
+                    <input id="nickname" type="text" formControlName="nickname"
+                           placeholder="Ex: ferino" class="form-input" />
+                    @if (f['nickname'].invalid && f['nickname'].touched) {
+                        <span class="form-error">Apelido deve ter entre 3 e 24 caracteres</span>
+                    }
+                </div>
             </div>
-        </div>
+        }
+
+        @if (step() === 2) {
+            <div class="jerseys-section">
+                <p class="jerseys-hint">Cadastre as camisas do time. Mínimo: 2 de linha e 1 de goleiro.</p>
+
+                <div class="jerseys-summary">
+                    <span class="summary-badge" [class.valid]="lineCount >= 2">Linha: {{ lineCount }}/2</span>
+                    <span class="summary-badge gk" [class.valid]="gkCount >= 1">Goleiro: {{ gkCount }}/1</span>
+                </div>
+
+                <div class="jerseys-list">
+                    @for (jerseyForm of jerseyForms(); track jerseyForm.get('id')?.value; let i = $index) {
+                        <div class="jersey-row" [formGroup]="jerseyForm">
+                            <span class="jersey-index">#{{ i + 1 }}</span>
+
+                            <input type="text" formControlName="name"
+                                   placeholder="Nome da camisa" class="jersey-name" />
+
+                            <div class="color-pick">
+                                <input type="color" formControlName="hexColor" class="color-input" />
+                                <span class="color-hex">{{ jerseyForm.get('hexColor')?.value }}</span>
+                            </div>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" formControlName="isGoalkeeperJersey" />
+                                Goleiro
+                            </label>
+
+                            <button type="button" class="btn-remove-jersey"
+                                    (click)="removeJerseyRow(jerseyForm.get('id')?.value)" title="Remover">&times;</button>
+                        </div>
+                    }
+                </div>
+
+                <button type="button" class="btn-add-jersey" (click)="addJerseyRow()">
+                    + Adicionar camisa
+                </button>
+            </div>
+        }
 
         @if (serverError()) {
             <div class="server-error">{{ serverError() }}</div>
         }
 
         <div class="form-actions">
+            @if (step() === 2) {
+                <button type="button" class="btn-back" (click)="backToClub()">Voltar</button>
+            }
+
             <a routerLink="/clubs" class="btn-cancel">Cancelar</a>
-            <button type="submit" class="btn-submit" [disabled]="loading()">
-                @if (loading()) { <span class="spinner"></span> }
-                {{ loading() ? 'Salvando...' : (isEdit() ? 'Salvar alterações' : 'Criar clube') }}
-            </button>
+
+            @if (!isEdit() && step() === 1) {
+                <button type="button" class="btn-next" (click)="goToJerseys()">Próximo</button>
+            } @else {
+                <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
+                    @if (loading()) { <span class="spinner"></span> }
+                    {{ loading() ? 'Salvando...' : (isEdit() ? 'Salvar alterações' : 'Criar clube') }}
+                </button>
+            }
         </div>
     </form>
 </div>

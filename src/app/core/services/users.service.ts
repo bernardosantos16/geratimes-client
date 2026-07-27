@@ -1,13 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   CreateUserRequestDTO,
   UserResponseDTO,
   PageUserResponseDTO,
   PageableParams,
+  SendEmailTokenRequestDTO,
+  VerifyEmailRequestDTO,
+  VerifyEmailResponseDTO,
 } from '../models/api.models';
 import { environment } from '../../../environments/environment';
+import { buildPageableParams } from '../utils/http-params.utils';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
@@ -15,10 +19,7 @@ export class UsersService {
   private readonly baseUrl = `${environment.apiUrl}/api/users`;
 
   getUsers(params?: PageableParams): Observable<PageUserResponseDTO> {
-    let httpParams = new HttpParams();
-    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
-    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
-    return this.http.get<PageUserResponseDTO>(this.baseUrl, { params: httpParams });
+    return this.http.get<PageUserResponseDTO>(this.baseUrl, { params: buildPageableParams(params) });
   }
 
   getUser(id: string): Observable<UserResponseDTO> {
@@ -33,9 +34,11 @@ export class UsersService {
     return this.http.put<UserResponseDTO>(`${this.baseUrl}/${id}`, dto);
   }
 
-  verifyEmail(token: string): Observable<void> {
-    return this.http.get<void>(`${this.baseUrl}/verify-email`, {
-      params: new HttpParams().set('token', token),
-    });
+  verifyEmail(dto: VerifyEmailRequestDTO): Observable<VerifyEmailResponseDTO> {
+    return this.http.post<VerifyEmailResponseDTO>(`${this.baseUrl}/verify-email`, dto);
+  }
+
+  sendVerificationCode(login: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/email`, { login } as SendEmailTokenRequestDTO);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,13 +14,13 @@ import { ClubDetailStore } from '@core/services/club-detail.store';
     templateUrl: 'club-matches.component.html',
     styleUrls: ['../../../shared/components/club-detail-nav/club-detail-nav.component.scss', './club-matches.component.scss'],
 })
-export class ClubMatchesComponent {
+export class ClubMatchesComponent implements OnInit {
     private readonly matchesService = inject(MatchesService);
     private readonly toast = inject(ToastService);
     private readonly destroyRef = inject(DestroyRef);
     readonly store = inject(ClubDetailStore);
 
-    constructor() {
+    ngOnInit(): void {
         this.loadMatches();
     }
 
@@ -29,7 +29,7 @@ export class ClubMatchesComponent {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (res) => this.store.matches.set(res.content),
-                error: () => this.toast.error('Erro ao carregar partidas.'),
+                error: (err: unknown) => this.toast.error('Erro ao carregar partidas.'),
             });
     }
 }

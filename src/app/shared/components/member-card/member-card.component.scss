@@ -1,0 +1,87 @@
+.member-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    transition: border-color 0.2s;
+
+    &:hover {
+        border-color: var(--border-strong);
+    }
+
+    &.clickable {
+        cursor: pointer;
+
+        &:hover {
+            border-color: var(--accent);
+        }
+    }
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.player-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.role-badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+
+    &.director {
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(77, 255, 143, 0.3);
+    }
+}
+
+.card-stats {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.stat-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+
+    &:not(:last-child) {
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--yellow);
+}

@@ -5,7 +5,7 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, ReplaySubject, switchMap, take, throwError } from 'rxjs';
+import { catchError, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { environment } from '../../../environments/environment';
@@ -15,6 +15,7 @@ const PUBLIC_ENDPOINTS = [
   '/api/auth/refresh',
   '/api/auth/logout',
   '/api/users/verify-email',
+  '/api/users/email',
 ];
 
 function isPublic(req: HttpRequest<unknown>): boolean {
@@ -50,6 +51,8 @@ function logoutAfterRefreshFailure(
   if (!auth.logoutStarted) {
     auth.logoutStarted = true;
     toast.error('Sessão expirada. Faça login novamente.');
+    // Fire-and-forget: runs outside component lifecycle (interceptor function).
+    // The logout() Observable auto-completes via catchError in AuthService.
     auth.logout().subscribe({ complete: () => { auth.logoutStarted = false; } });
   }
   return throwError(() => error);
@@ -63,26 +66,22 @@ function refreshAndRetry<T>(
     originalError: HttpErrorResponse
 ) {
   if (auth.isRefreshing) {
-    return auth.refreshTokenSubject.pipe(
+    return auth.observeRefreshToken().pipe(
         take(1),
         switchMap((token) => next(addAuthHeader(req, token))),
         catchError((err: HttpErrorResponse) => logoutAfterRefreshFailure(auth, toast, err))
     );
   }
 
-  auth.isRefreshing = true;
-  auth.refreshTokenSubject = new ReplaySubject<string>(1);
+  auth.startRefresh();
 
   return auth.refreshToken().pipe(
       switchMap((tokenRes) => {
-        auth.isRefreshing = false;
-        auth.refreshTokenSubject.next(tokenRes.accessToken);
-        auth.refreshTokenSubject.complete();
+        auth.completeRefresh(tokenRes.accessToken);
         return next(addAuthHeader(req, tokenRes.accessToken));
       }),
       catchError((err: HttpErrorResponse) => {
-        auth.isRefreshing = false;
-        auth.refreshTokenSubject.error(err);
+        auth.failRefresh(err);
         return logoutAfterRefreshFailure(auth, toast, err ?? originalError);
       })
   );

@@ -1,0 +1,11 @@
+<div class="steps">
+  @for (s of steps; track s.key; let i = $index) {
+    <div class="step" [class.active]="currentStep === s.key" [class.done]="isDone(s.key)">
+      <span class="step-num">{{ isDone(s.key) ? '✓' : i + 1 }}</span>
+      <span class="step-label">{{ s.label }}</span>
+    </div>
+    @if (i < steps.length - 1) {
+      <div class="step-connector" [class.done]="isDone(s.key)"></div>
+    }
+  }
+</div>

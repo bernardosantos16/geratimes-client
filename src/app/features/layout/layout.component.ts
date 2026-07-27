@@ -40,8 +40,7 @@ export class LayoutComponent {
             takeUntilDestroyed(this.destroyRef)
         ).subscribe({
             next: () => this.toast.success('Até logo!'),
-            error: () => {
-            },
+            error: (err: unknown) => this.toast.warning('Dados locais foram limpos.'),
         });
     }
 }

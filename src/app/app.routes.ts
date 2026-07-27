@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from '@core/guards/auth.guard';
+import { verificationPendingGuard, tokenRequiredGuard } from '@core/guards/verification.guard';
 
 export const routes: Routes = [
   {
@@ -13,6 +14,12 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     children: [
       {
+        path: 'email',
+        loadComponent: () =>
+          import('./features/auth/email/email.component').then((m) => m.EmailComponent),
+        title: 'Cadastro — Ferino',
+      },
+      {
         path: 'login',
         loadComponent: () =>
           import('./features/auth/login/login.component').then((m) => m.LoginComponent),
@@ -20,12 +27,14 @@ export const routes: Routes = [
       },
       {
         path: 'register',
+        canActivate: [tokenRequiredGuard],
         loadComponent: () =>
           import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
         title: 'Criar conta — Ferino',
       },
       {
         path: 'email-verify',
+        canActivate: [verificationPendingGuard],
         loadComponent: () =>
           import('./features/auth/email-verify/email-verify.component').then(
             (m) => m.EmailVerifyComponent

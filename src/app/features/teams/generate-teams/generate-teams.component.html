@@ -9,17 +9,7 @@
     <app-loading-spinner label="Carregando dados..."/>
 } @else {
     <!-- Step indicator -->
-    <div class="steps">
-        @for (s of stepLabels; track $index) {
-            <div class="step" [class.active]="currentStep() === s.key" [class.done]="isStepDone(s.key)">
-                <span class="step-num">{{ isStepDone(s.key) ? '✓' : ($index + 1) }}</span>
-                <span class="step-label">{{ s.label }}</span>
-            </div>
-            @if ($index < stepLabels.length - 1) {
-                <div class="step-connector" [class.done]="isStepDone(s.key)"></div>
-            }
-        }
-    </div>
+    <app-step-indicator [steps]="stepLabels" [currentStep]="currentStep()" />
 
     <!-- ── Step 1: Select players ── -->
     @if (currentStep() === 'select-players') {
@@ -36,7 +26,7 @@
                             <div class="player-avatar">{{ member.name[0].toUpperCase() }}</div>
                             <div class="player-details">
                                 <span class="player-name">{{ member.name }}</span>
-                                <app-square-rating [value]="member.rating ?? 0"/>
+                                @if (isDirector()) { <app-square-rating [value]="member.rating ?? 0"/> }
                             </div>
                         </div>
                         <div class="position-toggle">
@@ -128,8 +118,8 @@
             </form>
 
             <div class="step-actions">
-                <button class="btn-back" (click)="goToStep('select-players')">← Voltar</button>
-                <button class="btn-primary" (click)="generateTeams()" [disabled]="generating() || configForm.invalid">
+                <button type="button" class="btn-back" (click)="goToStep('select-players')">← Voltar</button>
+                <button type="button" class="btn-primary" (click)="generateTeams()" [disabled]="generating() || configForm.invalid">
                     @if (generating()) {
                         <span class="spinner"></span>
                     }
@@ -157,8 +147,10 @@
                     @for (team of generatedTeamCards(); track team.id) {
                         <app-team-card
                                 [team]="team"
+                                [showRating]="isDirector()"
                                 [enableSwap]="!swapping()"
-                                (swapRequested)="swapGeneratedPlayers($event)"/>
+                                (swapRequested)="swapGeneratedPlayers($event)"
+                        />
                     }
                 </div>
 

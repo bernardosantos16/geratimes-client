@@ -1,0 +1,31 @@
+<div
+    class="member-card"
+    [class.role-director]="member.clubRole === 'DIRECTOR'"
+    [class.clickable]="clickable"
+    (click)="clickable && selected.emit(member)"
+>
+    <div class="card-header">
+        <span class="player-name">{{ member.name }}</span>
+        @if (member.clubRole === 'DIRECTOR') {
+            <span class="role-badge director">
+                {{ member.clubRole | clubRole }}
+            </span>
+        }
+    </div>
+    <div class="card-stats">
+        @if (showRating) {
+            <div class="stat-group rating-block">
+                <span class="stat-label">Nível</span>
+                <app-square-rating [value]="member.rating ?? 0" />
+            </div>
+        }
+        <div class="stat-group">
+            <span class="stat-label">MVP</span>
+            <span class="stat-value">{{ member.timesMvp ?? 0 }}x</span>
+        </div>
+        <div class="stat-group">
+            <span class="stat-label">Campeão</span>
+            <span class="stat-value">{{ member.timesChampion ?? 0 }}x</span>
+        </div>
+    </div>
+</div>

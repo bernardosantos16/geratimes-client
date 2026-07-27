@@ -1,0 +1,42 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">FERINO</div>
+      <h1>Criar conta</h1>
+      <p>Informe seu email para começar.</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+      <div class="form-group">
+        <label for="login">E-mail</label>
+        <input
+          id="login"
+          type="email"
+          formControlName="login"
+          placeholder="seu@email.com"
+          autocomplete="email"
+          class="form-input"
+        />
+        @if (f['login'].invalid && f['login'].touched) {
+          <span class="form-error">Informe um e-mail válido</span>
+        } @else if (fieldErrors()['login']) {
+          <span class="form-error">{{ fieldErrors()['login'] }}</span>
+        }
+      </div>
+
+      @if (serverError()) {
+        <div class="server-error">{{ serverError() }}</div>
+      }
+
+      <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
+        @if (loading()) { <span class="spinner"></span> }
+        {{ loading() ? 'Enviando...' : 'Enviar código' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Já tem conta? <a routerLink="/auth/login">Entrar</a>
+    </p>
+  </div>
+  <div class="auth-bg"><div class="bg-glow"></div></div>
+</div>

@@ -7,6 +7,7 @@ import { AuthService } from '@core/services/auth.service';
 import { ToastService } from '@core/services/toast.service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { LoginRequestDTO } from '@core/models/api.models';
 import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
 
 @Component({
@@ -44,12 +45,13 @@ export class LoginComponent {
     this.loading.set(true);
     this.serverError.set('');
 
-    this.authService.login(this.form.getRawValue() as any).pipe(
+    this.authService.login(this.form.getRawValue() as LoginRequestDTO).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
+        this.loading.set(false);
         this.toast.success('Login realizado com sucesso!');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/dashboard']).catch(() => {});
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);

@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['empty-state.component.scss'],
 })
 export class EmptyStateComponent {
-  @Input() icon = '📭';
+  @Input() icon = '—';
   @Input() title = 'Nenhum item encontrado';
   @Input() message = 'Não há dados para exibir no momento.';
   @Input() actionLabel = '';

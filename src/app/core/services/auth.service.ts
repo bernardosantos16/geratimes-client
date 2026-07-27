@@ -27,9 +27,35 @@ export class AuthService {
   private readonly baseUrl = `${environment.apiUrl}/api/auth`;
 
   // ── Estado de refresh (usado pelo interceptor) ────────────────────────────
-  isRefreshing = false;
+  private readonly _refresh = {
+    active: false,
+    subject: new ReplaySubject<string>(1),
+  };
   logoutStarted = false;
-  refreshTokenSubject = new ReplaySubject<string>(1);
+
+  get isRefreshing(): boolean {
+    return this._refresh.active;
+  }
+
+  startRefresh(): void {
+    this._refresh.active = true;
+    this._refresh.subject = new ReplaySubject<string>(1);
+  }
+
+  completeRefresh(token: string): void {
+    this._refresh.active = false;
+    this._refresh.subject.next(token);
+    this._refresh.subject.complete();
+  }
+
+  failRefresh(err: unknown): void {
+    this._refresh.active = false;
+    this._refresh.subject.error(err);
+  }
+
+  observeRefreshToken(): Observable<string> {
+    return this._refresh.subject.asObservable();
+  }
 
   // ── Signals ───────────────────────────────────────────────────────────────
   private readonly _state = signal<AuthState>(this.loadFromStorage());
@@ -85,7 +111,7 @@ export class AuthService {
     this._state.set({ accessToken: null, user: null });
     this.clubContextService.clearClubContext();
     localStorage.removeItem(STORAGE_KEY);
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/auth/login']).catch(() => {});
   }
 
   private saveToStorage(): void {

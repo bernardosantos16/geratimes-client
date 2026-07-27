@@ -142,7 +142,7 @@
   gap: 0.5rem;
   width: 100%;
   background: var(--accent);
-  color: #050f09;
+  color: var(--accent-text);
   border: none;
   padding: 0.75rem;
   border-radius: 8px;
@@ -163,12 +163,58 @@
 .spinner {
   width: 16px; height: 16px;
   border: 2px solid rgba(0,0,0,0.2);
-  border-top-color: #050f09;
+  border-top-color: var(--accent-text);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.resend-section {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.resend-timer {
+  font-size: 0.85rem;
+  color: var(--text2);
+  margin: 0;
+
+  .countdown {
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.btn-resend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.55rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-dim);
+    transform: translateY(-1px);
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    border-top-color: var(--accent);
+    border-color: rgba(255,255,255,0.2);
+    border-top-color: var(--accent);
+  }
+}
 
 .auth-footer {
   text-align: center;
@@ -178,6 +224,51 @@
 
   a { color: var(--accent); font-weight: 500;
     &:hover { text-decoration: underline; }
+  }
+}
+
+/* Seção de email (display mascarado / fallback) */
+.email-section {
+  margin-bottom: 1.5rem;
+}
+
+.email-display {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+}
+
+.email-label {
+  font-size: 0.8rem;
+  color: var(--text2);
+}
+
+.email-value {
+  font-size: 0.88rem;
+  color: var(--text);
+  font-weight: 500;
+  font-family: monospace;
+  letter-spacing: 0.02em;
+}
+
+.email-change-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--text);
   }
 }
 

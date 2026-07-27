@@ -1,0 +1,49 @@
+.steps {
+  display: flex; align-items: center; gap: 0; margin-bottom: 1.75rem;
+}
+
+.step {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0;
+  opacity: 0.4; transition: opacity 0.2s;
+
+  &.active { opacity: 1; }
+
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    background: var(--surface2); color: var(--text3); border: 1px solid var(--border);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .step-label {
+    font-size: 0.82rem; color: var(--text3); font-weight: 500; transition: color 0.2s;
+  }
+
+  &.active {
+    .step-num { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+    .step-label { color: var(--text); }
+  }
+
+  &.done {
+    opacity: 1;
+
+    .step-num { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .step-label { color: var(--text2); }
+  }
+}
+
+.step-connector {
+  flex: 1; height: 1px; background: var(--border); margin: 0 0.5rem;
+  transition: background 0.2s;
+
+  &.done { background: var(--accent); }
+}
+
+@media (max-width: 480px) {
+  .steps { margin-bottom: 1.25rem; }
+
+  .step .step-label { font-size: 0.72rem; }
+}

@@ -5,22 +5,24 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TeamsService } from '../../../core/services/teams.service';
-import { MatchesService } from '../../../core/services/matches.service';
-import { ClubsService } from '../../../core/services/clubs.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { TeamsService } from '@core/services/teams.service';
+import { MatchesService } from '@core/services/matches.service';
+import { ClubsService } from '@core/services/clubs.service';
+import { ToastService } from '@core/services/toast.service';
 import {
   ClubMemberResponseDTO, ClubJerseyResponseDTO,
   GenerateTeamsResponseDTO, GeneratedTeamDTO,
-} from '../../../core/models/api.models';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { JerseyBadgeComponent } from '../../../shared/components/jersey-badge/jersey-badge.component';
-import { SquareRatingComponent } from '../../../shared/components/square-rating/square-rating.component';
-import { TeamCardComponent } from '../../../shared/components/team-card/team-card.component';
-import { PlayerUiModel, TeamUiModel } from '../../../core/models/team-ui.model';
+} from '@core/models/api.models';
+import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
+import { JerseyBadgeComponent } from '@shared/components/jersey-badge/jersey-badge.component';
+import { SquareRatingComponent } from '@shared/components/square-rating/square-rating.component';
+import { TeamCardComponent } from '@shared/components/team-card/team-card.component';
+import { PlayerUiModel, TeamUiModel } from '@core/models/team-ui.model';
 import { forkJoin } from 'rxjs';
 import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
+import { StepIndicatorComponent } from '@shared/components/step-indicator/step-indicator.component';
+import { fallbackTeamColor } from '@core/utils/team-color.utils';
 
 type Step = 'select-players' | 'configure' | 'result';
 
@@ -35,6 +37,7 @@ interface MemberWithRole extends ClubMemberResponseDTO {
     CommonModule, RouterModule, ReactiveFormsModule,
     PageHeaderComponent, LoadingSpinnerComponent,
     JerseyBadgeComponent, SquareRatingComponent, TeamCardComponent, SvgIconComponent,
+    StepIndicatorComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'generate-teams.component.html',
@@ -57,6 +60,7 @@ export class GenerateTeamsComponent implements OnInit {
   readonly members = signal<MemberWithRole[]>([]);
   readonly jerseys = signal<ClubJerseyResponseDTO[]>([]);
   readonly result = signal<GenerateTeamsResponseDTO | null>(null);
+  readonly isDirector = signal(false);
 
   matchId!: string;
   private membersMap = new Map<number, ClubMemberResponseDTO>();
@@ -90,11 +94,19 @@ export class GenerateTeamsComponent implements OnInit {
   ngOnInit(): void {
     this.matchId = this.route.snapshot.paramMap.get('matchId')!;
 
-    this.matchesService.getMatch(this.matchId).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (match) => this.loadClubData(match.clubId),
-      error: () => { this.toast.error('Partida não encontrada.'); this.router.navigate(['/matches']); },
+    forkJoin({
+      match: this.matchesService.getMatch(this.matchId),
+      directorClubs: this.clubsService.getClubs('DIRECTOR'),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ match, directorClubs }) => {
+        this.isDirector.set(directorClubs.some((club) => club.id === match.clubId));
+        this.loadClubData(match.clubId);
+      },
+      error: (err: unknown) => {
+        const detail = (err as { error?: { detail?: string } }).error?.detail;
+        this.toast.error(detail ?? 'Partida não encontrada.');
+        this.router.navigate(['/matches']).catch(() => {});
+      },
     });
   }
 
@@ -112,8 +124,9 @@ export class GenerateTeamsComponent implements OnInit {
         members.content.forEach((m) => this.membersMap.set(m.id, m));
         this.loading.set(false);
       },
-      error: () => {
-        this.toast.error('Erro ao carregar membros.');
+      error: (err: unknown) => {
+        const detail = (err as { error?: { detail?: string } }).error?.detail;
+        this.toast.error(detail ?? 'Erro ao carregar membros.');
         this.loading.set(false);
       },
     });
@@ -127,11 +140,6 @@ export class GenerateTeamsComponent implements OnInit {
 
   goToStep(step: Step): void {
     this.currentStep.set(step);
-  }
-
-  isStepDone(step: Step): boolean {
-    const order: Step[] = ['select-players', 'configure', 'result'];
-    return order.indexOf(step) < order.indexOf(this.currentStep());
   }
 
   generateTeams(): void {
@@ -216,12 +224,13 @@ export class GenerateTeamsComponent implements OnInit {
   private toTeamCardModel(team: GeneratedTeamDTO, index: number): TeamUiModel {
     const jersey = this.jerseys()[index];
     const teamName = jersey?.name ?? `Time ${index + 1}`;
-    const teamColor = jersey?.hexColor ?? this.fallbackTeamColor(index);
+    const teamColor = jersey?.hexColor ?? fallbackTeamColor(index);
 
     return {
       id: team.teamId,
       jerseyName: teamName,
       jerseyColor: teamColor,
+      score: team.score,
       players: team.lineMemberIds.map((id) => this.toPlayerModel(id, 'LINE', team.teamId)),
       goalkeeper: team.goalkeeperMemberId
         ? this.toPlayerModel(team.goalkeeperMemberId, 'GOAL', team.teamId)
@@ -242,11 +251,6 @@ export class GenerateTeamsComponent implements OnInit {
       teamId,
       isGoalkeeper: position === 'GOAL',
     };
-  }
-
-  private fallbackTeamColor(index: number): string {
-    const colors = ['#1565c0', '#555555', '#00a844', '#d63050', '#f39c12', '#7c4dff'];
-    return colors[index % colors.length];
   }
 
   memberName(id: number): string {

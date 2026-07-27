@@ -12,13 +12,14 @@ export interface Toast {
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   readonly toasts = signal<Toast[]>([]);
+  private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
 
   show(message: string, type: ToastType = 'info', duration = 4000): void {
     const id = crypto.randomUUID();
     const toast: Toast = { id, message, type, duration };
     this.toasts.update((t) => [...t, toast]);
     if (duration > 0) {
-      setTimeout(() => this.dismiss(id), duration);
+      this.timers.set(id, setTimeout(() => this.dismiss(id), duration));
     }
   }
 
@@ -39,6 +40,8 @@ export class ToastService {
   }
 
   dismiss(id: string): void {
+    const timer = this.timers.get(id);
+    if (timer) { clearTimeout(timer); this.timers.delete(id); }
     this.toasts.update((t) => t.filter((toast) => toast.id !== id));
   }
 }

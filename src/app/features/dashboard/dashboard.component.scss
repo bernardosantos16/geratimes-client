@@ -25,7 +25,7 @@ h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem;
 .greeting-text p { font-size: 0.9rem; color: var(--text2); margin-top: 0.4rem; }
 
 .btn-primary {
-  background: var(--accent); color: #050f09; border: none;
+  background: var(--accent); color: var(--accent-text); border: none;
   padding: 0.6rem 1.4rem; border-radius: 8px; font-weight: 700;
   font-size: 0.88rem; cursor: pointer; text-decoration: none;
   transition: all 0.2s; white-space: nowrap; align-self: flex-start;
@@ -71,6 +71,11 @@ h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem;
 .btn-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; font-weight: 500;
   &:hover { text-decoration: underline; } }
 
+.badge-count {
+  background: var(--yellow-dim); color: var(--yellow); border: 1px solid var(--yellow);
+  padding: 2px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;
+}
+
 .empty-section {
   display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
   padding: 2rem; text-align: center;
@@ -111,3 +116,58 @@ h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem;
 .club-nick { font-size: 0.75rem; color: var(--text3); }
 
 .arrow { color: var(--text3); font-size: 1.1rem; }
+
+/* Match mini list */
+.match-mini-list { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.match-mini-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 0.75rem; border-radius: 8px;
+  border: 1px solid var(--border); text-decoration: none;
+  transition: all 0.15s;
+  &:hover { background: var(--surface2); border-color: var(--accent); }
+}
+
+.match-mini-date {
+  font-size: 0.78rem; color: var(--text2); white-space: nowrap;
+  min-width: 100px;
+}
+
+.match-mini-club {
+  font-size: 0.85rem; font-weight: 500; color: var(--text);
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.pending-row {
+  border-color: var(--yellow);
+  &:hover { border-color: var(--accent); }
+}
+
+.upcoming-row {
+  border-color: var(--accent-dim);
+  &:hover { border-color: var(--accent); }
+}
+
+/* Result mini list */
+.result-mini-list { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.result-mini-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 0.75rem; border-radius: 8px;
+  border: 1px solid var(--border); text-decoration: none;
+  transition: all 0.15s;
+  &:hover { background: var(--surface2); border-color: var(--accent); }
+}
+
+.result-club {
+  font-size: 0.85rem; font-weight: 500; color: var(--text);
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.result-badge {
+  flex-shrink: 0; color: var(--text3);
+}
+
+.result-date {
+  font-size: 0.75rem; color: var(--text3); white-space: nowrap;
+}

@@ -71,7 +71,7 @@ button {
 
 .btn-confirm {
   background: var(--accent);
-  color: #050f09;
+  color: var(--accent-text);
   &.danger { background: var(--red); color: #fff; }
   &:hover { filter: brightness(1.1); }
 }

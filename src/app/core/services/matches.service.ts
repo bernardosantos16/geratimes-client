@@ -2,6 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {map, Observable} from 'rxjs';
 import {
+  BatchMatchRequestDTO,
   CreateMatchRequestDTO,
   MatchParticipantResponseDTO,
   MatchResponseDTO,
@@ -10,6 +11,7 @@ import {
   SetMatchResultRequestDTO,
 } from '../models/api.models';
 import {environment} from '../../../environments/environment';
+import { buildPageableParams } from '../utils/http-params.utils';
 
 @Injectable({ providedIn: 'root' })
 export class MatchesService {
@@ -17,11 +19,7 @@ export class MatchesService {
   private readonly baseUrl = `${environment.apiUrl}/api/matches`;
 
   getMatches(params?: PageableParams): Observable<PageMatchResponseDTO> {
-    let httpParams = new HttpParams();
-    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
-    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
-    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
-    return this.http.get<PageMatchResponseDTO>(this.baseUrl, { params: httpParams });
+    return this.http.get<PageMatchResponseDTO>(this.baseUrl, { params: buildPageableParams(params) });
   }
 
   getMatch(id: string): Observable<MatchResponseDTO> {
@@ -30,6 +28,10 @@ export class MatchesService {
 
   createMatch(dto: CreateMatchRequestDTO): Observable<MatchResponseDTO> {
     return this.http.post<MatchResponseDTO>(this.baseUrl, dto);
+  }
+
+  createBatchMatches(dto: BatchMatchRequestDTO): Observable<MatchResponseDTO[]> {
+    return this.http.post<MatchResponseDTO[]>(`${this.baseUrl}/batch`, dto);
   }
 
   deleteMatch(id: string): Observable<void> {
@@ -45,25 +47,27 @@ export class MatchesService {
   }
 
   getMatchesByClub(clubId: string, params?: PageableParams): Observable<PageMatchResponseDTO> {
-    let httpParams = new HttpParams().set('clubId', clubId);
-    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
-    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
-    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
-    return this.http.get<PageMatchResponseDTO>(this.baseUrl, { params: httpParams });
+    const base = new HttpParams().set('clubId', clubId);
+    return this.http.get<PageMatchResponseDTO>(this.baseUrl, { params: buildPageableParams(params, base) });
   }
 
   getMatchesByClubAndUpcoming(clubId: string, params?: PageableParams): Observable<PageMatchResponseDTO> {
-    let httpParams = new HttpParams().set('clubId', clubId);
-    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
-    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
-    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
-    return this.http.get<PageMatchResponseDTO>(`${this.baseUrl}/upcoming`, { params: httpParams });
+    const base = new HttpParams().set('clubId', clubId);
+    return this.http.get<PageMatchResponseDTO>(`${this.baseUrl}/upcoming`, { params: buildPageableParams(params, base) });
   }
 
-  matchesPendingResult(clubId: string): Observable<MatchResponseDTO[]> {
-    return this.getMatchesByClub(clubId).pipe(
+  matchesPendingResult(clubId: string, size: number = 100): Observable<MatchResponseDTO[]> {
+    const now = new Date();
+    return this.getMatchesByClub(clubId, { size, sort: 'dateTime,desc' }).pipe(
         map((page) => page.content),
-        map((matches) => matches.filter((match) => match.clubMemberMvpId === null && match.teamChampionId === null))
+        map((matches) =>
+          matches.filter(
+            (match) =>
+              new Date(match.dateTime) < now &&
+              match.clubMemberMvpId === null &&
+              match.teamChampionId === null
+          )
+        )
     );
   }
 }

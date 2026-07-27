@@ -14,10 +14,11 @@ export const authGuard: CanActivateFn = () => {
 
   return auth.refreshToken().pipe(
     map(() => true),
-    catchError(() => {
-      auth.logout().subscribe();
-      return of(router.createUrlTree(['/auth/login']));
-    })
+    catchError(() =>
+      auth.logout().pipe(
+        map(() => router.createUrlTree(['/auth/login']))
+      )
+    )
   );
 };
 

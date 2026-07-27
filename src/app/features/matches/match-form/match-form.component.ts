@@ -7,6 +7,16 @@ import { MatchesService } from '@core/services/matches.service';
 import { ToastService } from '@core/services/toast.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 
+const DAYS_OF_WEEK = [
+  { value: 'MONDAY', label: 'Segunda-feira' },
+  { value: 'TUESDAY', label: 'Terça-feira' },
+  { value: 'WEDNESDAY', label: 'Quarta-feira' },
+  { value: 'THURSDAY', label: 'Quinta-feira' },
+  { value: 'FRIDAY', label: 'Sexta-feira' },
+  { value: 'SATURDAY', label: 'Sábado' },
+  { value: 'SUNDAY', label: 'Domingo' },
+] as const;
+
 @Component({
   selector: 'app-match-form',
   standalone: true,
@@ -26,42 +36,87 @@ export class MatchFormComponent implements OnInit {
   readonly loading = signal(false);
   readonly serverError = signal('');
   readonly backLink = signal<string>('');
+  readonly mode = signal<'single' | 'batch'>('single');
+  readonly daysOfWeek = DAYS_OF_WEEK;
 
   private clubId!: string;
 
-  readonly form = this.fb.group({
-    dateTime: ['', Validators.required],
+  readonly form = this.fb.nonNullable.group({
+    dateTime: [''],
+    dayOfWeek: [''],
+    time: [''],
+    startDate: [''],
+    endDate: [''],
+    zoneId: ['America/Sao_Paulo'],
   });
-
-  get f() { return this.form.controls; }
 
   ngOnInit(): void {
     this.clubId = this.route.snapshot.paramMap.get('id')!;
-    console.log('Club ID:', this.clubId);
     this.backLink.set('/clubs/' + this.clubId);
   }
 
   onSubmit(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.loading.set(true);
     this.serverError.set('');
 
+    if (this.mode() === 'single') {
+      this.submitSingle();
+    } else {
+      this.submitBatch();
+    }
+  }
+
+  private submitSingle(): void {
     const { dateTime } = this.form.getRawValue();
+    if (!dateTime) {
+      this.form.controls.dateTime.markAsTouched();
+      return;
+    }
+
+    this.loading.set(true);
     const dto = {
       clubId: this.clubId,
-      dateTime: new Date(dateTime!).toISOString(),
+      dateTime: new Date(dateTime).toISOString(),
     };
 
     this.matchesService.createMatch(dto).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (match) => {
+        this.loading.set(false);
         this.toast.success('Partida agendada!');
-        this.router.navigate(['/matches', match.id]);
+        this.router.navigate(['/matches', match.id]).catch(() => {});
       },
       error: (err) => {
         this.loading.set(false);
         this.serverError.set(err.error?.detail ?? 'Erro ao agendar partida.');
+      },
+    });
+  }
+
+  private submitBatch(): void {
+    const { dayOfWeek, time, startDate, endDate, zoneId } = this.form.getRawValue();
+    if (!dayOfWeek || !time || !startDate || !endDate) {
+      if (!dayOfWeek) this.form.controls.dayOfWeek.markAsTouched();
+      if (!time) this.form.controls.time.markAsTouched();
+      if (!startDate) this.form.controls.startDate.markAsTouched();
+      if (!endDate) this.form.controls.endDate.markAsTouched();
+      return;
+    }
+
+    this.loading.set(true);
+    const dto = { clubId: this.clubId, dayOfWeek, time, startDate, endDate, zoneId };
+
+    this.matchesService.createBatchMatches(dto).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (matches) => {
+        this.loading.set(false);
+        this.toast.success(`${matches.length} partidas agendadas!`);
+        this.router.navigate(['/clubs', this.clubId, 'matches']).catch(() => {});
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.serverError.set(err.error?.detail ?? 'Erro ao agendar partidas.');
       },
     });
   }

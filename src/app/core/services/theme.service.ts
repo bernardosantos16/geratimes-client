@@ -6,6 +6,7 @@ export type Theme = 'dark' | 'light';
 export class ThemeService {
   readonly theme = signal<Theme>(this.loadTheme());
 
+  // constructor required: effect() must run inside injection context
   constructor() {
     effect(() => {
       const t = this.theme();

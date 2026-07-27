@@ -24,12 +24,14 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="login">E-mail</label>
-                <input id="login" type="email" formControlName="login" placeholder="seu@email.com" autocomplete="email" class="form-input" />
-                @if (f['login'].invalid && f['login'].touched) {
-                    <span class="form-error">E-mail inválido</span>
-                }
+            <div class="email-display-section">
+                <div class="email-display">
+                    <span class="email-label">Email verificado:</span>
+                    <span class="email-value">{{ displayEmail() }}</span>
+                </div>
+<!--                <button type="button" class="btn-back" (click)="backToVerify()">-->
+<!--                    Voltar e corrigir código-->
+<!--                </button>-->
             </div>
 
             <div class="form-group">
@@ -42,7 +44,8 @@
                             placeholder="Mínimo 8 caracteres"
                             autocomplete="new-password"
                             class="form-input" />
-                    <button type="button" class="toggle-pw" (click)="showPassword.update(v => !v)">
+                    <button type="button" class="toggle-pw" (click)="showPassword.update(v => !v)"
+                            [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'">
                         @if (showPassword()) {
                             <app-svg-icon name='visibility_off'></app-svg-icon>
                         } @else {
@@ -83,7 +86,7 @@
                 <div class="server-error">{{ serverError() }}</div>
             }
 
-            <button type="submit" class="btn-submit" [disabled]="loading()">
+            <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
                 @if (loading()) { <span class="spinner"></span> }
                 {{ loading() ? 'Criando conta...' : 'Criar conta' }}
             </button>

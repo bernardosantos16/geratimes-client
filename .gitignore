@@ -1,3 +1,6 @@
+graphify-out/
+.openclaude/
+
 # Node
 node_modules/
 npm-debug.log

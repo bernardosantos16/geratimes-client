@@ -2,33 +2,45 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'matchDate', standalone: true })
 export class MatchDatePipe implements PipeTransform {
+  private readonly formatters = new Map<string, Intl.DateTimeFormat>();
+
   transform(value: string | null | undefined, format: 'short' | 'long' | 'time' = 'short'): string {
     if (!value) return '—';
     const date = new Date(value);
     if (isNaN(date.getTime())) return '—';
 
     const locale = 'pt-BR';
+    const options = this.getFormatOptions(format);
+    const key = JSON.stringify(options);
 
+    if (!this.formatters.has(key)) {
+      this.formatters.set(key, new Intl.DateTimeFormat(locale, options));
+    }
+
+    return this.formatters.get(key)!.format(date);
+  }
+
+  private getFormatOptions(format: 'short' | 'long' | 'time'): Intl.DateTimeFormatOptions {
     switch (format) {
       case 'long':
-        return date.toLocaleDateString(locale, {
+        return {
           weekday: 'long',
           day: '2-digit',
           month: 'long',
           year: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
-        });
+        };
       case 'time':
-        return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+        return { hour: '2-digit', minute: '2-digit' };
       default:
-        return date.toLocaleDateString(locale, {
+        return {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
-        });
+        };
     }
   }
 }
@@ -57,7 +69,8 @@ export class MatchPositionPipe implements PipeTransform {
 
 @Pipe({
   name: 'contrast',
-  pure: true // Pipe puro para melhor performance
+  pure: true,
+  standalone: true,
 })
 export class ContrastPipe implements PipeTransform {
   private cache = new Map<string, string>();
@@ -82,7 +95,6 @@ export class ContrastPipe implements PipeTransform {
     const normalizedHex = hexColor.startsWith("#") ? hexColor.slice(1) : hexColor;
 
     if (normalizedHex.length !== 6) {
-      console.error('Invalid hex color format');
       return '#000000';
     }
 

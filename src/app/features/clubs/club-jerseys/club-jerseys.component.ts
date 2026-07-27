@@ -1,10 +1,11 @@
-import { Component, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubDetailStore } from '@core/services/club-detail.store';
+import { AddJerseyRequestDTO } from '@core/models/api.models';
 import { JerseyBadgeComponent } from '@shared/components/jersey-badge/jersey-badge.component';
 
 @Component({
@@ -15,10 +16,10 @@ import { JerseyBadgeComponent } from '@shared/components/jersey-badge/jersey-bad
     templateUrl: 'club-jerseys.component.html',
     styleUrls: ['../../../shared/components/club-detail-nav/club-detail-nav.component.scss', './club-jerseys.component.scss'],
 })
-export class ClubJerseysComponent {
+export class ClubJerseysComponent implements OnInit {
     private readonly clubsService = inject(ClubsService);
     private readonly toast = inject(ToastService);
-    private readonly fb = inject(FormBuilder);
+    private readonly fb = inject(FormBuilder).nonNullable;
     private readonly destroyRef = inject(DestroyRef);
     readonly store = inject(ClubDetailStore);
 
@@ -28,7 +29,7 @@ export class ClubJerseysComponent {
         isGoalkeeperJersey: [false],
     });
 
-    constructor() {
+    ngOnInit(): void {
         this.loadJerseys();
     }
 
@@ -37,13 +38,13 @@ export class ClubJerseysComponent {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (jerseys) => this.store.jerseys.set(jerseys),
-                error: () => this.toast.error('Erro ao carregar camisas.'),
+                error: (err: unknown) => this.toast.error('Erro ao carregar camisas.'),
             });
     }
 
     addJersey(): void {
         if (this.jerseyForm.invalid) return;
-        this.clubsService.addJersey(this.store.clubId(), this.jerseyForm.getRawValue() as any)
+        this.clubsService.addJersey(this.store.clubId(), this.jerseyForm.getRawValue() as AddJerseyRequestDTO)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (j) => {
@@ -51,7 +52,7 @@ export class ClubJerseysComponent {
                     this.jerseyForm.reset({ name: '', hexColor: '#4dff8f', isGoalkeeperJersey: false });
                     this.toast.success('Camisa adicionada!');
                 },
-                error: () => this.toast.error('Erro ao adicionar camisa.'),
+                error: (err: unknown) => this.toast.error('Erro ao adicionar camisa.'),
             });
     }
 
@@ -63,7 +64,7 @@ export class ClubJerseysComponent {
                     this.store.jerseys.update((arr) => arr.filter((j) => j.id !== id));
                     this.toast.success('Camisa removida.');
                 },
-                error: () => this.toast.error('Erro ao remover camisa.'),
+                error: (err: unknown) => this.toast.error('Erro ao remover camisa.'),
             });
     }
 }

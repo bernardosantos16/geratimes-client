@@ -1,0 +1,72 @@
+<div class="section-card result-card">
+  <div class="section-head result-head">
+    <div>
+      <h2>Resultado da Partida</h2>
+      <p class="section-hint">Defina o time campeão e o MVP entre os participantes.</p>
+    </div>
+    @if (hasResult) {
+      <span class="result-badge">Definido</span>
+    } @else {
+      <span class="result-badge pending">Pendente</span>
+    }
+  </div>
+
+  @if (teams.length === 0) {
+    <div class="empty-msg">Gere os times antes de definir o resultado.</div>
+  } @else {
+    @if (hasResult) {
+      <div class="result-summary">
+        <div class="result-item">
+          <span class="result-label">Campeão</span>
+          <span class="result-value">{{ championName }}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">MVP</span>
+          <span class="result-value">{{ mvpName }}</span>
+        </div>
+      </div>
+    }
+
+    @if (!hasResult) {
+      <div class="result-form">
+        <label class="form-field">
+          <span>Time campeão</span>
+          <select
+            class="form-select"
+            [ngModel]="championTeamId"
+            (ngModelChange)="championChange.emit($event)"
+            [disabled]="saving">
+            <option [ngValue]="null" disabled>Selecione o time campeão</option>
+            @for (team of teams; track team.id) {
+              <option [ngValue]="team.id">{{ team.jerseyName }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>MVP</span>
+          <select
+            class="form-select"
+            [ngModel]="mvpMemberId"
+            (ngModelChange)="mvpChange.emit($event)"
+            [disabled]="saving">
+            <option [ngValue]="null" disabled>Selecione o MVP</option>
+            @for (player of mvpCandidates; track player.id) {
+              <option [ngValue]="player.id">
+                {{ player.name }} - {{ player.position === 'GOAL' ? 'Goleiro' : 'Linha' }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <button
+          class="btn-primary result-submit"
+          type="button"
+          [disabled]="!canSave()"
+          (click)="saveResult.emit()">
+          {{ saving ? 'Salvando...' : 'Salvar resultado' }}
+        </button>
+      </div>
+    }
+  }
+</div>

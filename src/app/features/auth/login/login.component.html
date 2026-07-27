@@ -40,7 +40,7 @@
                 <div class="server-error">{{ serverError() }}</div>
             }
 
-            <button type="submit" class="btn-submit" [disabled]="loading()">
+            <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
                 @if (loading()) { <span class="spinner"></span> }
                 {{ loading() ? 'Entrando...' : 'Entrar' }}
             </button>
@@ -48,7 +48,7 @@
 
         <p class="auth-footer">
             Não tem conta?
-            <a routerLink="/auth/register">Criar conta</a>
+            <a routerLink="/auth/email">Criar conta</a>
         </p>
     </div>
 

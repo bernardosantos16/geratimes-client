@@ -19,8 +19,14 @@
                     <span class="match-date">{{ match.dateTime | matchDate:'short' }}</span>
                 </div>
                 <div class="match-divider"></div>
-                <div class="match-status" [class.upcoming]="isUpcoming(match)">
-                    {{ isUpcoming(match) ? '📅 Agendada' : '✓ Realizada' }}
+                <div class="match-status" [class.upcoming]="isUpcoming(match)" [class.pending]="isDirector() && isPendingResult(match)">
+                    @if (isUpcoming(match)) {
+                        📅 Agendada
+                    } @else if (isDirector() && isPendingResult(match)) {
+                        ⚠ Resultado pendente
+                    } @else {
+                        ✓ Realizada
+                    }
                 </div>
                 <span class="arrow">›</span>
             </a>

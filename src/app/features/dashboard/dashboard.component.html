@@ -1,13 +1,13 @@
 <div class="dashboard">
     <!-- Hero greeting -->
-    <div class="greeting">
-        <div class="greeting-text">
-            <span class="eyebrow">Bem-vindo de volta</span>
-            <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span></h1>
-            <p>Organize suas partidas e times com facilidade.</p>
-        </div>
-        <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>
-    </div>
+<!--    <div class="greeting">-->
+<!--        <div class="greeting-text">-->
+<!--            <span class="eyebrow">Bem-vindo de volta</span>-->
+<!--            <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span></h1>-->
+<!--            <p>Organize suas partidas e times com facilidade.</p>-->
+<!--        </div>-->
+<!--        <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>-->
+<!--    </div>-->
 
     @if (loading()) {
         <app-loading-spinner label="Carregando..." />
@@ -32,8 +32,8 @@
                         ariaLabel="Ball icon">
                 </app-svg-icon>
                 <div class="stat-body">
-                    <span class="stat-value">{{ totalMatches() }}</span>
-                    <span class="stat-label">Partidas</span>
+                    <span class="stat-value">{{ completedMatchesCount() }}</span>
+                    <span class="stat-label">Realizadas</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -50,6 +50,7 @@
         </div>
 
         <!-- Owner Clubs -->
+        @defer (on viewport) {
         <div class="dashboard-grid">
             <section class="section-card">
                 <div class="section-header">
@@ -113,5 +114,66 @@
                 }
             </section>
         </div>
+
+        <!-- Pending results -->
+        @if (pendingMatches().length > 0) {
+            <section class="section-card">
+                <div class="section-header">
+                    <h2>Resultados pendentes</h2>
+                    <span class="badge-count">{{ pendingMatches().length }}</span>
+                </div>
+                <div class="match-mini-list">
+                    @for (item of pendingMatches(); track item.match.id) {
+                        <a [routerLink]="['/matches', item.match.id]" class="match-mini-row pending-row">
+                            <span class="match-mini-date">{{ item.match.dateTime | matchDate:'short' }}</span>
+                            <span class="match-mini-club">{{ item.clubName }}</span>
+                            <span class="arrow">›</span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        <!-- Upcoming matches -->
+        @if (upcomingMatches().length > 0) {
+            <section class="section-card">
+                <div class="section-header">
+                    <h2>Próximas partidas</h2>
+                </div>
+                <div class="result-mini-list">
+                    @for (item of upcomingMatches(); track item.match.id) {
+                        <a [routerLink]="['/matches', item.match.id]" class="result-mini-row upcoming-row">
+                            <span class="result-club">{{ item.clubName }}</span>
+                            <app-svg-icon class="result-badge" name="calendar_today" size="16px" ariaLabel="Próxima partida"></app-svg-icon>
+                            <span class="result-date">{{ item.match.dateTime | matchDate:'short' }}</span>
+                            <span class="arrow">›</span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        <!-- Recent results -->
+        @if (recentResults().length > 0) {
+            <section class="section-card">
+                <div class="section-header">
+                    <h2>Últimos resultados</h2>
+                </div>
+                <div class="result-mini-list">
+                    @for (item of recentResults(); track item.match.id) {
+                        <a [routerLink]="['/matches', item.match.id]" class="result-mini-row">
+                            <span class="result-club">{{ item.clubName }}</span>
+                            <app-svg-icon class="result-badge" name="trophy" size="16px" ariaLabel="Campeão"></app-svg-icon>
+                            <span class="result-date">{{ item.match.dateTime | matchDate:'short' }}</span>
+                            <span class="arrow">›</span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+        } @placeholder {
+            <app-loading-spinner [size]="20" label="Carregando dados..." />
+        }
+
     }
 </div>
