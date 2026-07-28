@@ -18,12 +18,13 @@ import {ToastService} from '@core/services/toast.service';
 import {HttpErrorResponse} from '@angular/common/http';
 import {UsersService} from "@core/services/users.service";
 import {PendingVerificationService} from "@core/services/pending-verification.service";
+import { SvgIconComponent } from '@shared/components/svg-icon/svg-icon.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'app-email-verify',
     standalone: true,
-    imports: [CommonModule, RouterModule, ReactiveFormsModule],
+    imports: [CommonModule, RouterModule, ReactiveFormsModule, SvgIconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './email-verify.component.html',
     styleUrls: ['./email-verify.component.scss'],

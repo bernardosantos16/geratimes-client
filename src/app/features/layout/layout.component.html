@@ -2,7 +2,10 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <a class="logo" routerLink="/dashboard">FERINO</a>
+            <a class="logo" routerLink="/dashboard">
+                <app-svg-icon name="logo" size="28px" ariaLabel="Gênio FC"></app-svg-icon>
+                <span>GÊNIO FC</span>
+            </a>
             <button class="sidebar-close" (click)="sidebarOpen.set(false)" aria-label="Fechar menu">
                 <app-svg-icon name="close" size="24px" ariaLabel="Fechar menu"></app-svg-icon>
             </button>
@@ -62,7 +65,10 @@
             <button class="icon-btn hamburger" (click)="sidebarOpen.set(true)" aria-label="Abrir menu">
                 <app-svg-icon name="menu" size="24px" ariaLabel="Abrir menu"></app-svg-icon>
             </button>
-            <a class="topbar-logo" routerLink="/dashboard">FERINO</a>
+            <a class="topbar-logo" routerLink="/dashboard">
+                <app-svg-icon name="logo" size="24px" ariaLabel="Gênio FC"></app-svg-icon>
+                <span>GÊNIO FC</span>
+            </a>
             <div class="topbar-right">
                 <button class="icon-btn" (click)="themeService.toggle()">
                     @if (themeService.theme() === 'dark') {

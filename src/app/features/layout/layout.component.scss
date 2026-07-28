@@ -45,6 +45,9 @@
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.6rem;
     letter-spacing: 0.08em;
@@ -247,6 +250,9 @@
 }
 
 .topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.4rem;
     color: var(--accent);

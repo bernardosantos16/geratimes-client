@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UsersService } from '@core/services/users.service';
 import { PendingVerificationService } from '@core/services/pending-verification.service';
+import { SvgIconComponent } from '@shared/components/svg-icon/svg-icon.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProblemDetail } from '@core/models/api.models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-email',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, SvgIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './email.component.html',
   styleUrls: ['./email.component.scss'],

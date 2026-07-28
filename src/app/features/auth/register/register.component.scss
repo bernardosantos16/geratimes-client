@@ -21,7 +21,8 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 .auth-header { text-align: center; margin-bottom: 2rem;
-  .auth-logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem;
+  .auth-logo { display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem;
     letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.75rem; }
   h1 { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.35rem; }
   p  { font-size: 0.88rem; color: var(--text2); }
