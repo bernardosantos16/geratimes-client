@@ -1,5 +1,6 @@
 graphify-out/
 .openclaude/
+.playwright-mcp/
 
 # Node
 node_modules/

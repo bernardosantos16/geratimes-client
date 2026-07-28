@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { ToastContainerComponent } from './toast-container.component';
-import { ToastService, ToastMessage } from '@core/services/toast.service';
+import { ToastService, Toast } from '@core/services/toast.service';
 
-function makeToast(overrides: Partial<ToastMessage> = {}): ToastMessage {
+function makeToast(overrides: Partial<Toast> = {}): Toast {
   return {
     id: 't1',
     type: 'success',
@@ -17,13 +17,13 @@ function makeToast(overrides: Partial<ToastMessage> = {}): ToastMessage {
 describe('ToastContainerComponent', () => {
   let fixture: ComponentFixture<ToastContainerComponent>;
   let component: ToastContainerComponent;
-  let mockToasts: ReturnType<typeof signal<ToastMessage[]>>;
-  let toastService: Pick<ToastService, 'toasts' | 'dismiss'>;
+  let mockToasts: ReturnType<typeof signal<Toast[]>>;
+  let toastService: any;
 
   beforeEach(async () => {
-    mockToasts = signal<ToastMessage[]>([]);
+    mockToasts = signal<Toast[]>([]);
     toastService = {
-      toasts: mockToasts.asReadonly(),
+      toasts: mockToasts,
       dismiss: vi.fn(),
     };
 
@@ -51,7 +51,7 @@ describe('ToastContainerComponent', () => {
       info: 'ℹ',
     };
     for (const [type, icon] of Object.entries(icons)) {
-      mockToasts.set([makeToast({ type: type as ToastMessage['type'] })]);
+      mockToasts.set([makeToast({ type: type as Toast['type'] })]);
       fixture.detectChanges();
 
       const iconEl = fixture.debugElement.query(By.css('.toast-icon'));

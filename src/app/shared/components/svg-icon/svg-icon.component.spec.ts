@@ -1,34 +1,37 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SvgIconComponent } from './svg-icon.component';
 import { IconRegistryService } from '@core/services/icon-registry.service';
-
-const SAFE_SVG: SafeHtml = '<svg>icon</svg>' as unknown as SafeHtml;
 
 describe('SvgIconComponent', () => {
   let fixture: ComponentFixture<SvgIconComponent>;
   let component: SvgIconComponent;
-  let mockRegistry: { has: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> };
+  let mockRegistry: any;
+  let safeSvg: SafeHtml;
 
   beforeEach(async () => {
     mockRegistry = {
-      has: vi.fn().mockReturnValue(false),
-      get: vi.fn().mockReturnValue(null),
+      has: () => false,
+      get: () => null,
     };
 
     await TestBed.configureTestingModule({
       imports: [SvgIconComponent],
       providers: [{ provide: IconRegistryService, useValue: mockRegistry }],
     }).compileComponents();
+
+    const sanitizer = TestBed.inject(DomSanitizer);
+    safeSvg = sanitizer.bypassSecurityTrustHtml('<svg>icon</svg>');
+
     fixture = TestBed.createComponent(SvgIconComponent);
     component = fixture.componentInstance;
   });
 
   it('should render SVG when icon exists in registry', () => {
-    mockRegistry.has.mockReturnValue(true);
-    mockRegistry.get.mockReturnValue(SAFE_SVG);
+    mockRegistry.has = () => true;
+    mockRegistry.get = () => safeSvg;
     component.name = 'home';
     fixture.detectChanges();
 
@@ -38,7 +41,7 @@ describe('SvgIconComponent', () => {
   });
 
   it('should show warning fallback when icon does not exist', () => {
-    mockRegistry.has.mockReturnValue(false);
+    mockRegistry.has = () => false;
     component.name = 'unknown';
     fixture.detectChanges();
 
@@ -48,8 +51,8 @@ describe('SvgIconComponent', () => {
   });
 
   it('should apply custom size styles', () => {
-    mockRegistry.has.mockReturnValue(true);
-    mockRegistry.get.mockReturnValue(SAFE_SVG);
+    mockRegistry.has = () => true;
+    mockRegistry.get = () => safeSvg;
     component.name = 'home';
     component.size = '48px';
     fixture.detectChanges();
@@ -60,8 +63,8 @@ describe('SvgIconComponent', () => {
   });
 
   it('should apply custom color when provided', () => {
-    mockRegistry.has.mockReturnValue(true);
-    mockRegistry.get.mockReturnValue(SAFE_SVG);
+    mockRegistry.has = () => true;
+    mockRegistry.get = () => safeSvg;
     component.name = 'home';
     component.color = 'var(--red)';
     fixture.detectChanges();
@@ -71,7 +74,7 @@ describe('SvgIconComponent', () => {
   });
 
   it('should default size to 24px', () => {
-    mockRegistry.has.mockReturnValue(false);
+    mockRegistry.has = () => false;
     component.name = 'home';
     fixture.detectChanges();
 
@@ -81,8 +84,8 @@ describe('SvgIconComponent', () => {
   });
 
   it('should apply aria-label attribute', () => {
-    mockRegistry.has.mockReturnValue(true);
-    mockRegistry.get.mockReturnValue(SAFE_SVG);
+    mockRegistry.has = () => true;
+    mockRegistry.get = () => safeSvg;
     component.name = 'home';
     component.ariaLabel = 'Ícone de início';
     fixture.detectChanges();

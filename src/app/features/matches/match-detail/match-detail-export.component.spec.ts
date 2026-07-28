@@ -13,20 +13,20 @@ import {
 
 const MATCH: MatchResponseDTO = {
   id: 'm1', clubId: 'c1', dateTime: '2026-01-01T10:00:00Z',
-  teamCount: 2, participantCount: 4, hasResult: false, teamChampionId: null, clubMemberMvpId: null,
+  teamChampionId: null, clubMemberMvpId: null,
 };
 
 const MEMBER: ClubMemberResponseDTO = {
   id: 1, name: 'João', rating: 4, timesMvp: 1, timesChampion: 2,
-  clubRole: 'MEMBER', position: 'MEIA', clubId: 10,
+  clubRole: 'MEMBER', teamId: 1
 };
 
 const PARTICIPANT: MatchParticipantResponseDTO = {
-  id: 1, clubMemberId: 1, position: 'LINE', teamId: 1, memberName: 'João', jerseyName: 'Time 1',
+  matchId: 'm1', id: 1, clubMemberId: 1, position: 'LINE', teamId: 1
 };
 
 const TEAM: TeamResponseDTO = {
-  id: 1, score: 10, clubJerseyId: 1, lineMemberIds: [1, 2], goalkeeperMemberId: 3,
+  matchId: 'm1', id: 1, score: 10, clubJerseyId: 1
 };
 
 const JERSEY: ClubJerseyResponseDTO = {

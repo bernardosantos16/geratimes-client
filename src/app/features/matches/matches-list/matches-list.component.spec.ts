@@ -10,7 +10,7 @@ import { MatchResponseDTO } from '@core/models/api.models';
 
 const MATCH: MatchResponseDTO = {
   id: 'm1', clubId: 'c1', dateTime: '2026-01-01T10:00:00Z',
-  teamCount: 2, participantCount: 10, hasResult: false,
+  teamChampionId: null, clubMemberMvpId: null,
 };
 
 describe('MatchesListComponent', () => {

@@ -6,7 +6,7 @@ import { EditMemberModalComponent, SaveMemberEvent } from './edit-member-modal.c
 
 const MEMBER: ClubMemberResponseDTO = {
   id: 1, name: 'João', rating: 4, timesMvp: 2, timesChampion: 3,
-  clubRole: 'MEMBER', position: 'MEIA', clubId: 10,
+  clubRole: 'MEMBER'
 };
 
 describe('EditMemberModalComponent', () => {

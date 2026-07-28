@@ -1,7 +1,7 @@
 import {
   Component, inject, signal, OnInit, computed, ChangeDetectionStrategy, DestroyRef
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -19,7 +19,7 @@ import { JerseyBadgeComponent } from '@shared/components/jersey-badge/jersey-bad
 import { SquareRatingComponent } from '@shared/components/square-rating/square-rating.component';
 import { TeamCardComponent } from '@shared/components/team-card/team-card.component';
 import { PlayerUiModel, TeamUiModel } from '@core/models/team-ui.model';
-import { forkJoin } from 'rxjs';
+import { forkJoin, startWith } from 'rxjs';
 import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
 import { StepIndicatorComponent } from '@shared/components/step-indicator/step-indicator.component';
 import { fallbackTeamColor } from '@core/utils/team-color.utils';
@@ -69,10 +69,17 @@ export class GenerateTeamsComponent implements OnInit {
     maxLinePlayers: [5, [Validators.required, Validators.min(1)]],
   });
 
+  readonly maxLinePlayers = toSignal(
+    this.configForm.get('maxLinePlayers')!.valueChanges.pipe(
+      startWith(this.configForm.get('maxLinePlayers')!.value)
+    ),
+    { initialValue: 5 }
+  );
+
   readonly lineCount = computed(() => this.members().filter((m) => m.assignedAs === 'line').length);
   readonly goalkeeperCount = computed(() => this.members().filter((m) => m.assignedAs === 'goalkeeper').length);
   readonly estimatedTeams = computed(() => {
-    const perTeam = this.configForm.get('maxLinePlayers')?.value ?? 5;
+    const perTeam = this.maxLinePlayers() ?? 5;
     return perTeam > 0 ? Math.floor(this.lineCount() / perTeam) : 0;
   });
   readonly generatedTeamCards = computed<TeamUiModel[]>(() => {

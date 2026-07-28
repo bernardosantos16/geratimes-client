@@ -97,7 +97,7 @@
                     <div class="preview-info">
                         Serão formados aproximadamente
                         <strong class="accent">{{ estimatedTeams() }}</strong> times
-                        com <strong class="accent">{{ configForm.get('maxLinePlayers')?.value }}</strong> jogadores
+                        com <strong class="accent">{{ maxLinePlayers() }}</strong> jogadores
                         cada.
                     </div>
                 </div>
@@ -123,7 +123,7 @@
                     @if (generating()) {
                         <span class="spinner"></span>
                     }
-                    {{ generating() ? 'Gerando...' : '⚽ Gerar Times' }}
+                    {{ generating() ? 'Gerando...' : 'Gerar Times' }}
                 </button>
             </div>
         </div>

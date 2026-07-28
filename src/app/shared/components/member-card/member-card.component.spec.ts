@@ -11,8 +11,6 @@ const MEMBER: ClubMemberResponseDTO = {
   clubRole: 'MEMBER',
   timesMvp: 3,
   timesChampion: 2,
-  position: 'MEIA',
-  clubId: 10,
 };
 
 describe('MemberCardComponent', () => {

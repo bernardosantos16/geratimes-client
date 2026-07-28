@@ -7,7 +7,7 @@ import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubResponseDTO } from '@core/models/api.models';
 
-const CLUB: ClubResponseDTO = { id: 'c1', name: 'Meu Clube', nickname: 'MC1', memberCount: 5 };
+const CLUB: ClubResponseDTO = { id: 'c1', name: 'Meu Clube', nickname: 'MC1' };
 
 function validClubForm(component: ClubFormComponent) {
   component.form.patchValue({ name: 'Novo Clube', nickname: 'Nic' });

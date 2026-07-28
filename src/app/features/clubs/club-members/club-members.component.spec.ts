@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { ClubMembersComponent } from './club-members.component';
 import { ClubsService } from '@core/services/clubs.service';
@@ -11,7 +10,7 @@ import { ClubMemberResponseDTO } from '@core/models/api.models';
 function member(overrides: Partial<ClubMemberResponseDTO> = {}): ClubMemberResponseDTO {
   return {
     id: 1, name: 'João', rating: 4, timesMvp: 2, timesChampion: 3,
-    clubRole: 'MEMBER', position: 'MEIA', clubId: 10, ...overrides,
+    clubRole: 'MEMBER', ...overrides,
   };
 }
 
@@ -118,7 +117,7 @@ describe('ClubMembersComponent', () => {
   it('should remove member from store on delete', () => {
     clubsMock.removeMember.mockReturnValue(of(void 0));
     store.members.set([member({ name: 'Zé' }), member({ id: 2, name: 'Ana' })]);
-    component.memberToDelete.set(member({ id: 2 }));
+    component['memberToDelete'].set(member({ id: 2 }));
 
     component.deleteSelectedMember();
 

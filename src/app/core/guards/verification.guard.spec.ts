@@ -22,7 +22,7 @@ describe('verificationPendingGuard', () => {
 
   function runGuard() {
     return TestBed.runInInjectionContext(
-      () => verificationPendingGuard(),
+      () => (verificationPendingGuard as () => ReturnType<typeof verificationPendingGuard>)(),
     );
   }
 
@@ -56,7 +56,7 @@ describe('tokenRequiredGuard', () => {
 
   function runGuard() {
     return TestBed.runInInjectionContext(
-      () => tokenRequiredGuard(),
+      () => (tokenRequiredGuard as () => ReturnType<typeof tokenRequiredGuard>)(),
     );
   }
 

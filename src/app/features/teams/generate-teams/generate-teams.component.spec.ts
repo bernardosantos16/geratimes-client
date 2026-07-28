@@ -8,20 +8,31 @@ import { TeamsService } from '@core/services/teams.service';
 import { MatchesService } from '@core/services/matches.service';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
-import { ClubMemberResponseDTO, ClubJerseyResponseDTO, MatchResponseDTO, GenerateTeamsResponseDTO } from '@core/models/api.models';
+import {
+  ClubMemberResponseDTO,
+  ClubJerseyResponseDTO,
+  MatchResponseDTO,
+  GenerateTeamsResponseDTO,
+  GeneratedTeamDTO
+} from '@core/models/api.models';
 
-const MATCH: MatchResponseDTO = { id: 'm1', clubId: 'c1', dateTime: '2026-01-01T10:00:00Z', teamCount: 0, participantCount: 0, hasResult: false };
+const MATCH: MatchResponseDTO = {
+  id: 'm1', clubId: 'c1', dateTime: '2026-01-01T10:00:00Z',
+  teamChampionId: null, clubMemberMvpId: null
+};
 
 const MEMBER: ClubMemberResponseDTO = {
   id: 1, name: 'João', rating: 4, timesMvp: 2, timesChampion: 3,
-  clubRole: 'MEMBER', position: 'MEIA', clubId: 10,
+  clubRole: 'MEMBER', teamId: 1
 };
 
 const JERSEY: ClubJerseyResponseDTO = { id: 1, name: 'Time 1', hexColor: '#ff0000', clubId: 'c1', isGoalkeeperJersey: false };
 
 const RESULT: GenerateTeamsResponseDTO = {
-  teams: [{ teamId: 1, score: 10, lineMemberIds: [1, 2], goalkeeperMemberId: null }],
-  teamCount: 1, matchId: 'm1',
+  matchId: 'm1',
+  teamCount: 1,
+  teams: [{ teamId: 1, score: 10, lineMemberIds: [1, 2] }, { teamId: 2, score: 10, lineMemberIds: [3, 4] }],
+  unassignedGoalkeeperMemberIds: []
 };
 
 describe('GenerateTeamsComponent', () => {
