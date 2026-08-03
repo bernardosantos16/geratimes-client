@@ -62,7 +62,7 @@
         <div class="section-card" #teamsSection>
             <div class="section-head">
                 <h2>Times Gerados <span class="count">{{ teams().length }}</span></h2>
-                <p class="section-hint">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+                <p class="section-hint">{{ swapHint() }}</p>
             </div>
             <div class="teams-grid" #teamsGrid>
                 @if (freeGoalkeepersCard()) {

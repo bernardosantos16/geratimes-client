@@ -3,12 +3,17 @@
         [class.goalkeeper]="player.isGoalkeeper"
         [class.not-draggable]="!draggable"
         [class.drag-over]="isDragOver()"
+        [class.selected]="isSelected()"
         [draggable]="draggable"
+        [attr.aria-label]="draggable ? ariaLabel() : null"
+        [attr.aria-selected]="draggable ? isSelected() : null"
+        role="option"
         (dragstart)="onDragStart($event)"
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
         (dragend)="onDragEnd()"
+        (click)="onTapSelect($event)"
 >
 
     @if (draggable) {

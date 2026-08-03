@@ -5,10 +5,14 @@ import {provideHttpClient, withInterceptors, withXsrfConfiguration} from '@angul
 import {routes} from './app.routes';
 import {authInterceptor} from '@core/interceptors/auth.interceptor';
 import {IconRegistryService} from "@core/services/icon-registry.service";
+import {DeviceService} from "@core/services/device.service";
 import { MATERIAL_ICONS } from "@core/data/icon.data";
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideAppInitializer(() => {
+        inject(DeviceService);
+    }),
     provideAppInitializer(() => {
         const registry = inject(IconRegistryService);
         MATERIAL_ICONS.forEach(icon => {

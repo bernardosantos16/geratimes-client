@@ -35,6 +35,18 @@
     transform: scale(1.02);
 }
 
+.player-row.selected {
+    border: 1px solid var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 0 14px var(--accent-glow);
+    outline: 1px solid var(--accent);
+    outline-offset: 0;
+}
+.player-row.selected:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
 .drag-handle {
     color: var(--text3);
     font-size: 0.65rem;
@@ -57,3 +69,18 @@
 }
 .gk-label { color: var(--text3); }
 app-square-rating { flex-shrink: 0; }
+
+@media (hover: none) and (pointer: coarse) {
+    .player-row {
+        padding: 0.45rem 0.55rem;
+        min-height: 36px;
+    }
+    .player-row.not-draggable {
+        padding: 0.3rem 0.4rem;
+        min-height: 29px;
+    }
+    .drag-handle {
+        font-size: 0.75rem;
+        margin-right: 0.4rem;
+    }
+}

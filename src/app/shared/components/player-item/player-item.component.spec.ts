@@ -10,8 +10,17 @@ const PLAYER: PlayerUiModel = {
   position: 'LINE', teamId: 1, isGoalkeeper: false,
 };
 
+const OTHER_PLAYER: PlayerUiModel = {
+  id: 5, name: 'Pedro', rating: 3, timesChampion: 0, timesMvp: 2,
+  position: 'LINE', teamId: 99, isGoalkeeper: false,
+};
+
 function createDragEvent(): Event {
   return new Event('drop', { bubbles: true, cancelable: true });
+}
+
+function createClickEvent(): MouseEvent {
+  return new MouseEvent('click', { bubbles: true, cancelable: true });
 }
 
 describe('PlayerItemComponent', () => {
@@ -29,6 +38,8 @@ describe('PlayerItemComponent', () => {
   beforeEach(async () => {
     dragSwapState.source.set(null);
     dragSwapState.target.set(null);
+    dragSwapState.selected.set(null);
+    dragSwapState.justDragged = false;
 
     await TestBed.configureTestingModule({
       imports: [PlayerItemComponent],
@@ -90,5 +101,69 @@ describe('PlayerItemComponent', () => {
     component.onDrop(createDragEvent() as DragEvent);
 
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  describe('tap-to-select', () => {
+    it('should set isSelected true when this player is the tap-selected player', () => {
+      createComponent(PLAYER);
+      dragSwapState.selected.set(PLAYER);
+      expect(component.isSelected()).toBe(true);
+    });
+
+    it('should set isSelected false for a different player', () => {
+      createComponent(PLAYER);
+      dragSwapState.selected.set(OTHER_PLAYER);
+      expect(component.isSelected()).toBe(false);
+    });
+
+    it('should select this player when no player is currently selected', () => {
+      createComponent(PLAYER, true);
+      component.onTapSelect(createClickEvent());
+      expect(dragSwapState.selected()).toEqual(PLAYER);
+    });
+
+    it('should deselect when tapping the already-selected player', () => {
+      createComponent(PLAYER, true);
+      dragSwapState.selected.set(PLAYER);
+      component.onTapSelect(createClickEvent());
+      expect(dragSwapState.selected()).toBeNull();
+    });
+
+    it('should emit swapRequested when tapping another player from a different team', () => {
+      createComponent(PLAYER, true);
+      const spy = vi.fn();
+      component.swapRequested.subscribe(spy);
+
+      dragSwapState.selected.set(OTHER_PLAYER);
+      component.onTapSelect(createClickEvent());
+
+      expect(spy).toHaveBeenCalledWith({ from: OTHER_PLAYER, to: PLAYER });
+      expect(dragSwapState.selected()).toBeNull();
+    });
+
+    it('should not emit swapRequested when tapping a player from the same team', () => {
+      createComponent(PLAYER, true);
+      const spy = vi.fn();
+      component.swapRequested.subscribe(spy);
+
+      dragSwapState.selected.set({ ...PLAYER, id: 2, teamId: PLAYER.teamId });
+      component.onTapSelect(createClickEvent());
+
+      expect(spy).not.toHaveBeenCalled();
+      expect(dragSwapState.selected()).toBeNull();
+    });
+
+    it('should not respond to tap when not draggable', () => {
+      createComponent(PLAYER, false);
+      component.onTapSelect(createClickEvent());
+      expect(dragSwapState.selected()).toBeNull();
+    });
+
+    it('should ignore tap when justDragged flag is true (post-drag click)', () => {
+      createComponent(PLAYER, true);
+      dragSwapState.justDragged = true;
+      component.onTapSelect(createClickEvent());
+      expect(dragSwapState.selected()).toBeNull();
+    });
   });
 });

@@ -1,6 +1,7 @@
 import {
   Component, inject, signal, OnInit, computed, ChangeDetectionStrategy, DestroyRef
 } from '@angular/core';
+import { DeviceService } from '@core/services/device.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -52,6 +53,7 @@ export class GenerateTeamsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly deviceService = inject(DeviceService);
 
   readonly loading = signal(true);
   readonly generating = signal(false);
@@ -90,6 +92,12 @@ export class GenerateTeamsComponent implements OnInit {
   });
   readonly generatedDropListIds = computed(() =>
     this.generatedTeamCards().map((team) => this.dropListId(team.id))
+  );
+
+  readonly swapHint = computed(() =>
+    this.deviceService.isTouchDevice()
+      ? 'Toque em um jogador para selecioná-lo e depois toque no destino para trocar.'
+      : 'Arraste um jogador para outro time para trocar com alguém da mesma posição.'
   );
 
   readonly stepLabels = [

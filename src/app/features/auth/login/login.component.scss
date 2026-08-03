@@ -139,31 +139,6 @@
   color: var(--red);
 }
 
-.btn-submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  background: var(--accent);
-  color: var(--accent-text);
-  border: none;
-  padding: 0.75rem;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: filter 0.2s, transform 0.2s;
-  margin-top: 0.25rem;
-
-  &:hover:not(:disabled) {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
-}
-
 .spinner {
   width: 16px; height: 16px;
   border: 2px solid rgba(0,0,0,0.2);

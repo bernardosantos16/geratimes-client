@@ -141,7 +141,7 @@
                     <button class="btn-outline" (click)="goToStep('configure')">Regerar</button>
                 </div>
 
-                <p class="swap-note">Arraste um jogador para outro time para trocar com alguém da mesma posição.</p>
+                <p class="swap-note">{{ swapHint() }}</p>
 
                 <div class="teams-grid">
                     @for (team of generatedTeamCards(); track team.id) {

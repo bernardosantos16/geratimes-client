@@ -24,15 +24,6 @@ h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem;
 
 .greeting-text p { font-size: 0.9rem; color: var(--text2); margin-top: 0.4rem; }
 
-.btn-primary {
-  background: var(--accent); color: var(--accent-text); border: none;
-  padding: 0.6rem 1.4rem; border-radius: 8px; font-weight: 700;
-  font-size: 0.88rem; cursor: pointer; text-decoration: none;
-  transition: all 0.2s; white-space: nowrap; align-self: flex-start;
-  display: inline-flex; align-items: center;
-  &:hover { filter: brightness(1.1); transform: translateY(-1px); }
-}
-
 /* Stats */
 .stats-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;

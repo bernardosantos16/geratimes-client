@@ -132,23 +132,6 @@
   }
 }
 
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  background: var(--accent); color: var(--accent-text); border: none;
-  padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 700;
-  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
-  &:hover:not(:disabled) { filter: brightness(1.1); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-}
-
-.btn-back, .btn-outline {
-  background: none; border: 1px solid var(--border); color: var(--text2);
-  padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.88rem;
-  font-weight: 500; cursor: pointer; text-decoration: none;
-  transition: all 0.2s; display: inline-flex;
-  &:hover { border-color: var(--text3); color: var(--text); }
-}
-
 /* Results */
 .result-section { display: flex; flex-direction: column; gap: 1.5rem; }
 

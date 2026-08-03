@@ -1,19 +1,4 @@
 /* Shared: buttons, tabs, forms */
-.btn-primary {
-  background: var(--accent); color: var(--accent-text); border: none;
-  padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 700;
-  font-size: 0.85rem; cursor: pointer; text-decoration: none;
-  transition: all 0.2s; display: inline-flex; align-items: center;
-  &:hover { filter: brightness(1.1); }
-}
-
-.btn-outline {
-  background: none; border: 1px solid var(--border); color: var(--text2);
-  padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
-  font-weight: 500; text-decoration: none; transition: all 0.2s;
-  &:hover { border-color: var(--accent); color: var(--accent); }
-}
-
 .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
 
 .tab {
@@ -49,14 +34,6 @@
 
 .rating-inline { display: flex; align-items: center; gap: 0.5rem; }
 .rating-label { font-size: 0.82rem; color: var(--text2); }
-
-.btn-primary-sm {
-  background: var(--accent); color: var(--accent-text); border: none;
-  padding: 0.5rem 1.1rem; border-radius: 8px; font-weight: 700;
-  font-size: 0.82rem; cursor: pointer; white-space: nowrap;
-  &:hover:not(:disabled) { filter: brightness(1.1); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-}
 
 .empty-msg { text-align: center; padding: 2rem; color: var(--text2); font-size: 0.9rem; }
 

@@ -25,19 +25,4 @@
     max-width: 320px;
     line-height: 1.6;
   }
-
-  .btn-primary {
-    margin-top: 0.5rem;
-    background: var(--accent);
-    color: var(--accent-text);
-    border: none;
-    padding: 0.55rem 1.4rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.88rem;
-    cursor: pointer;
-    transition: filter 0.2s;
-
-    &:hover { filter: brightness(1.1); }
-  }
 }

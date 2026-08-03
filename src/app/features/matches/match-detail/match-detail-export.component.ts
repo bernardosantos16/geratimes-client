@@ -1,4 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, inject, DestroyRef, OnInit, signal, ElementRef, viewChild} from '@angular/core';
+import { DeviceService } from '@core/services/device.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
@@ -44,6 +45,7 @@ export class MatchDetailComponent implements OnInit {
     private readonly activatedRoute = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly destroyRef = inject(DestroyRef);
+    private readonly deviceService = inject(DeviceService);
 
     readonly loading = signal(true);
     readonly swapping = signal(false);
@@ -67,6 +69,11 @@ export class MatchDetailComponent implements OnInit {
         const match = this.match();
         return !!match?.teamChampionId && !!match?.clubMemberMvpId;
     });
+    readonly swapHint = computed(() =>
+        this.deviceService.isTouchDevice()
+            ? 'Toque em um jogador para selecioná-lo e depois toque no destino para trocar.'
+            : 'Arraste um jogador para outro time para trocar com alguém da mesma posição.'
+    );
     readonly championTeamName = computed(() => {
         const teamId = this.match()?.teamChampionId;
         if (!teamId) return '';

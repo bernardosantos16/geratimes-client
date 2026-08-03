@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlayerUiModel } from '@core/models/team-ui.model';
 import { SquareRatingComponent } from '../square-rating/square-rating.component';
-import {dragSwapState} from "@shared/components/team-card/drag-state";
+import { dragSwapState } from '@shared/components/team-card/drag-state';
+import { DeviceService } from '@core/services/device.service';
 
 @Component({
     selector: 'app-player-item',
@@ -18,11 +19,22 @@ export class PlayerItemComponent {
     @Input() showRating = true;
     @Output() swapRequested = new EventEmitter<{ from: PlayerUiModel; to: PlayerUiModel }>();
 
+    readonly deviceService = inject(DeviceService);
+
+    readonly ariaLabel = computed(() => {
+        return this.deviceService.isTouchDevice()
+            ? `Toque para selecionar ${this.player.name}`
+            : `Arraste ${this.player.name} para trocar`;
+    });
+
     isDragOver = computed(() => {
         const source = dragSwapState.source();
         const target = dragSwapState.target();
-        // Fica em destaque apenas se o jogador arrastado for de outro time e da mesma posição (opcional)
-        return target?.id === this.player.id && source && source.teamId !== this.player.teamId;
+        return target?.id === this.player.id && !!source && source.teamId !== this.player.teamId;
+    });
+
+    isSelected = computed(() => {
+        return dragSwapState.selected()?.id === this.player.id;
     });
 
     onDragStart(event: DragEvent): void {
@@ -31,11 +43,12 @@ export class PlayerItemComponent {
             event.dataTransfer.effectAllowed = 'move';
         }
         dragSwapState.source.set(this.player);
+        dragSwapState.justDragged = true;
     }
 
     onDragOver(event: DragEvent): void {
         if (!this.draggable) return;
-        event.preventDefault(); // Necessário para permitir o Drop
+        event.preventDefault();
 
         const source = dragSwapState.source();
         if (source && source.id !== this.player.id && source.teamId !== this.player.teamId) {
@@ -43,7 +56,7 @@ export class PlayerItemComponent {
         }
     }
 
-    onDragLeave(event: DragEvent): void {
+    onDragLeave(_event: DragEvent): void {
         if (!this.draggable) return;
         if (dragSwapState.target()?.id === this.player.id) {
             dragSwapState.target.set(null);
@@ -58,7 +71,6 @@ export class PlayerItemComponent {
         const source = dragSwapState.source();
 
         if (source && source.id !== this.player.id && source.teamId !== this.player.teamId) {
-            // Emite o evento de troca para o componente Pai
             this.swapRequested.emit({ from: source, to: this.player });
         }
 
@@ -69,8 +81,33 @@ export class PlayerItemComponent {
         this.clearState();
     }
 
+    onTapSelect(event: MouseEvent): void {
+        if (!this.draggable || dragSwapState.justDragged) return;
+        event.stopPropagation();
+
+        const selected = dragSwapState.selected();
+
+        if (!selected) {
+            dragSwapState.selected.set(this.player);
+            return;
+        }
+
+        if (selected.id === this.player.id) {
+            dragSwapState.selected.set(null);
+            return;
+        }
+
+        if (selected.teamId !== this.player.teamId) {
+            this.swapRequested.emit({ from: selected, to: this.player });
+        }
+
+        dragSwapState.selected.set(null);
+    }
+
     private clearState(): void {
         dragSwapState.source.set(null);
         dragSwapState.target.set(null);
+        dragSwapState.selected.set(null);
+        setTimeout(() => { dragSwapState.justDragged = false; }, 0);
     }
 }
