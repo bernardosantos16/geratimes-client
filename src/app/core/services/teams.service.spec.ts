@@ -54,7 +54,7 @@ describe('TeamsService', () => {
 
   it('should generate teams via POST /generate', () => {
     const payload: GenerateTeamsRequestDTO = { matchId: 'm1', lineMemberIds: [1, 2, 3], goalkeeperMemberIds: [4], maxLinePlayers: 5 };
-    const response: GenerateTeamsResponseDTO = { matchId: 'm1', teamCount: 1, teams: [{ teamId: 1, score: 0, lineMemberIds: [1, 2, 3], goalkeeperMemberId: 4 }], unassignedGoalkeeperMemberIds: [] };
+    const response: GenerateTeamsResponseDTO = { matchId: 'm1', teamCount: 1, teams: [{ teamId: 1, totalScore: 0, lineMemberIds: [1, 2, 3], goalkeeperMemberId: 4 }], unassignedGoalkeeperMemberIds: [] };
     service.generateTeams(payload).subscribe((res) => expect(res.teamCount).toBe(1));
     const req = httpTesting.expectOne(`${service['baseUrl']}/generate`);
     expect(req.request.method).toBe('POST');
@@ -63,9 +63,10 @@ describe('TeamsService', () => {
 
   it('should swap players via POST /swap', () => {
     const payload: SwapPlayersRequestDTO = { matchId: 'm1', swaps: [{ memberIdFrom: 1, memberIdTo: 2 }] };
-    service.swapPlayers(payload).subscribe();
+    const response: GenerateTeamsResponseDTO = { matchId: 'm1', teamCount: 1, teams: [], unassignedGoalkeeperMemberIds: [] };
+    service.swapPlayers(payload).subscribe((res) => expect(res.matchId).toBe('m1'));
     const req = httpTesting.expectOne(`${service['baseUrl']}/swap`);
     expect(req.request.method).toBe('POST');
-    req.flush(null);
+    req.flush(response);
   });
 });

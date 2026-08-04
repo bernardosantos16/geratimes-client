@@ -31,7 +31,7 @@ const JERSEY: ClubJerseyResponseDTO = { id: 1, name: 'Time 1', hexColor: '#ff000
 const RESULT: GenerateTeamsResponseDTO = {
   matchId: 'm1',
   teamCount: 1,
-  teams: [{ teamId: 1, score: 10, lineMemberIds: [1, 2] }, { teamId: 2, score: 10, lineMemberIds: [3, 4] }],
+  teams: [{ teamId: 1, totalScore: 10, lineMemberIds: [1, 2] }, { teamId: 2, totalScore: 10, lineMemberIds: [3, 4] }],
   unassignedGoalkeeperMemberIds: []
 };
 
@@ -58,7 +58,7 @@ describe('GenerateTeamsComponent', () => {
       })),
       getJerseys: vi.fn().mockReturnValue(of([JERSEY, { ...JERSEY, id: 2 }])),
     };
-    teamsMock = { generateTeams: vi.fn().mockReturnValue(of(RESULT)), swapPlayers: vi.fn().mockReturnValue(of({})) };
+    teamsMock = { generateTeams: vi.fn().mockReturnValue(of(RESULT)), swapPlayers: vi.fn().mockReturnValue(of(RESULT)) };
     toastMock = { success: vi.fn(), error: vi.fn() };
 
     await TestBed.configureTestingModule({

@@ -37,7 +37,7 @@ export class TeamsService {
     return this.http.post<GenerateTeamsResponseDTO>(`${this.baseUrl}/generate`, payload);
   }
 
-  swapPlayers(payload: SwapPlayersRequestDTO): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/swap`, payload);
+  swapPlayers(payload: SwapPlayersRequestDTO): Observable<GenerateTeamsResponseDTO> {
+    return this.http.post<GenerateTeamsResponseDTO>(`${this.baseUrl}/swap`, payload);
   }
 }

@@ -10,6 +10,7 @@ import {
     ClubJerseyResponseDTO,
     ClubMemberResponseDTO,
     ClubResponseDTO,
+    GenerateTeamsResponseDTO,
     MatchParticipantResponseDTO,
     MatchResponseDTO,
     TeamResponseDTO,
@@ -245,16 +246,19 @@ export class MatchDetailComponent implements OnInit {
             matchId,
             swaps: [{ memberIdFrom: event.from.id, memberIdTo: event.to.id }],
         }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: () => {
+            next: (response: GenerateTeamsResponseDTO) => {
                 this.participants.update((participants) =>
-                    participants.map((participant) => {
-                        if (participant.clubMemberId === event.from.id) {
-                            return { ...participant, teamId: event.to.teamId ?? undefined };
-                        }
-                        if (participant.clubMemberId === event.to.id) {
-                            return { ...participant, teamId: event.from.teamId ?? undefined };
-                        }
-                        return participant;
+                    participants.map((p) => {
+                        const team = response.teams.find((t) =>
+                            t.lineMemberIds.includes(p.clubMemberId) || t.goalkeeperMemberId === p.clubMemberId
+                        );
+                        return team ? { ...p, teamId: team.teamId } : p;
+                    })
+                );
+                this.teams.update((teams) =>
+                    teams.map((team) => {
+                        const generated = response.teams.find((t) => t.teamId === team.id);
+                        return generated ? { ...team, score: generated.totalScore } : team;
                     })
                 );
                 this.swapping.set(false);

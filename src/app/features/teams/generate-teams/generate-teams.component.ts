@@ -193,8 +193,8 @@ export class GenerateTeamsComponent implements OnInit {
       matchId: this.matchId,
       swaps: [{ memberIdFrom: event.from.id, memberIdTo: event.to.id }],
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.applyLocalSwap(event.from, event.to);
+      next: (response) => {
+        this.result.set(response);
         this.swapping.set(false);
         this.toast.success('Jogadores trocados.');
       },
@@ -209,33 +209,6 @@ export class GenerateTeamsComponent implements OnInit {
     return `generated-team-${teamId}`;
   }
 
-  private applyLocalSwap(from: PlayerUiModel, to: PlayerUiModel): void {
-    this.result.update((current) => {
-      if (!current) return current;
-
-      return {
-        ...current,
-        teams: current.teams.map((team) => {
-          if (from.position === 'GOAL') {
-            return {
-              ...team,
-              goalkeeperMemberId: team.goalkeeperMemberId === from.id
-                ? to.id
-                : team.goalkeeperMemberId === to.id ? from.id : team.goalkeeperMemberId,
-            };
-          }
-
-          return {
-            ...team,
-            lineMemberIds: team.lineMemberIds.map((id) =>
-              id === from.id ? to.id : id === to.id ? from.id : id
-            ),
-          };
-        }),
-      };
-    });
-  }
-
   private toTeamCardModel(team: GeneratedTeamDTO, index: number): TeamUiModel {
     const jersey = this.jerseys()[index];
     const teamName = jersey?.name ?? `Time ${index + 1}`;
@@ -245,7 +218,7 @@ export class GenerateTeamsComponent implements OnInit {
       id: team.teamId,
       jerseyName: teamName,
       jerseyColor: teamColor,
-      score: team.score,
+      score: team.totalScore,
       players: team.lineMemberIds.map((id) => this.toPlayerModel(id, 'LINE', team.teamId)),
       goalkeeper: team.goalkeeperMemberId
         ? this.toPlayerModel(team.goalkeeperMemberId, 'GOAL', team.teamId)

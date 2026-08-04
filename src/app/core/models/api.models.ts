@@ -189,7 +189,7 @@ export interface GenerateTeamsRequestDTO {
 
 export interface GeneratedTeamDTO {
   teamId: number;
-  score: number
+  totalScore: number
   lineMemberIds: number[];
   goalkeeperMemberId?: number;
 }

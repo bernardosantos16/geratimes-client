@@ -8,7 +8,7 @@ import { TeamsService } from '@core/services/teams.service';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import {
-  MatchResponseDTO, ClubMemberResponseDTO, ClubJerseyResponseDTO, MatchParticipantResponseDTO, TeamResponseDTO,
+  MatchResponseDTO, ClubMemberResponseDTO, ClubJerseyResponseDTO, MatchParticipantResponseDTO, TeamResponseDTO, GenerateTeamsResponseDTO,
 } from '@core/models/api.models';
 
 const MATCH: MatchResponseDTO = {
@@ -51,7 +51,11 @@ describe('MatchDetailComponent', () => {
     };
     teamsMock = {
       getTeamsByMatch: vi.fn().mockReturnValue(of({ content: [TEAM], totalPages: 1, totalElements: 1, number: 0, size: 10 })),
-      swapPlayers: vi.fn(),
+      swapPlayers: vi.fn().mockReturnValue(of({
+        matchId: 'm1', teamCount: 1,
+        teams: [{ teamId: 1, totalScore: 10, lineMemberIds: [1], goalkeeperMemberId: undefined }],
+        unassignedGoalkeeperMemberIds: [],
+      } as GenerateTeamsResponseDTO)),
     };
     clubsMock = {
       getClubById: vi.fn().mockReturnValue(of({ id: 'c1', name: 'Clube', nickname: 'C', memberCount: 5 })),
