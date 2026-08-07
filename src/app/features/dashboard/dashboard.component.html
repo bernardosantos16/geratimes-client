@@ -1,16 +1,16 @@
 <div class="dashboard">
     <!-- Hero greeting -->
-<!--    <div class="greeting">-->
-<!--        <div class="greeting-text">-->
-<!--            <span class="eyebrow">Bem-vindo de volta</span>-->
-<!--            <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span></h1>-->
-<!--            <p>Organize suas partidas e times com facilidade.</p>-->
-<!--        </div>-->
-<!--        <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>-->
-<!--    </div>-->
+    <!--    <div class="greeting">-->
+    <!--        <div class="greeting-text">-->
+    <!--            <span class="eyebrow">Bem-vindo de volta</span>-->
+    <!--            <h1>Olá, <span class="accent">{{ auth.currentUser()?.name ?? 'jogador' }}</span></h1>-->
+    <!--            <p>Organize suas partidas e times com facilidade.</p>-->
+    <!--        </div>-->
+    <!--        <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>-->
+    <!--    </div>-->
 
     @if (loading()) {
-        <app-loading-spinner label="Carregando..." />
+        <app-loading-spinner label="Carregando..."/>
     } @else {
         <!-- Quick stats -->
         <div class="stats-grid">
@@ -51,128 +51,133 @@
 
         <!-- Owner Clubs -->
         @defer (on viewport) {
-        <div class="dashboard-grid">
-            <section class="section-card">
-                <div class="section-header">
-                    <h2>Clubes como Diretor</h2>
-                    <a routerLink="/clubs" class="btn-link">Ver todos →</a>
-                </div>
-                @if (ownerClubs().length === 0) {
-                    <div class="empty-section">
-                        <app-svg-icon
-                                name='stadium'
-                                size='45px'
-                                ariaLabel='Stadium icon'>
-                        </app-svg-icon>
-                        <p>Nenhum clube como diretor.</p>
-                        <a routerLink="/clubs/new" class="btn-sm">+ Criar Novo Clube</a>
+            <div class="dashboard-grid">
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2>Clubes como Diretor</h2>
+                        <a routerLink="/clubs" class="btn-link">Ver todos →</a>
                     </div>
-                } @else {
-                    <div class="club-list">
-                        @for (club of ownerClubs().slice(0, 5); track club.id) {
-                            <a [routerLink]="['/clubs', club.id]" class="club-row owner-club" (click)="selectClub(club, 'DIRECTOR')">
-                                <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
-                                <div class="club-info">
-                                    <span class="club-name">{{ club.name }}</span>
-                                    <span class="club-nick">{{ '@' + club.nickname }}</span>
-                                </div>
+                    @if (ownerClubs().length === 0) {
+                        <div class="empty-section">
+                            <app-svg-icon
+                                    name='stadium'
+                                    size='45px'
+                                    ariaLabel='Stadium icon'>
+                            </app-svg-icon>
+                            <p>Nenhum clube como diretor.</p>
+                            <a routerLink="/clubs/new" class="btn-sm">+ Criar Novo Clube</a>
+                        </div>
+                    } @else {
+                        <div class="club-list">
+                            @for (club of ownerClubs().slice(0, 5); track club.id) {
+                                <a [routerLink]="['/clubs', club.id]" class="club-row owner-club"
+                                   (click)="selectClub(club, 'DIRECTOR')">
+                                    <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
+                                    <div class="club-info">
+                                        <span class="club-name">{{ club.name }}</span>
+                                        <span class="club-nick">{{ '@' + club.nickname }}</span>
+                                    </div>
+                                    <span class="arrow">›</span>
+                                </a>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <!-- Member Clubs -->
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2>Clubes como Membro</h2>
+                        <a routerLink="/clubs" class="btn-link">Ver todos →</a>
+                    </div>
+                    @if (memberClubs().length === 0) {
+                        <div class="empty-section">
+                            <app-svg-icon
+                                    name='stadium'
+                                    size='45px'
+                                    ariaLabel='Stadium icon'>
+                            </app-svg-icon>
+                            <p>Nenhum clube como membro.</p>
+                        </div>
+                    } @else {
+                        <div class="club-list">
+                            @for (club of memberClubs().slice(0, 5); track club.id) {
+                                <a [routerLink]="['/clubs', club.id]" class="club-row member-club"
+                                   (click)="selectClub(club, 'MEMBER')">
+                                    <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
+                                    <div class="club-info">
+                                        <span class="club-name">{{ club.name }}</span>
+                                        <span class="club-nick">{{ '@' + club.nickname }}</span>
+                                    </div>
+                                    <span class="arrow">›</span>
+                                </a>
+                            }
+                        </div>
+                    }
+                </section>
+            </div>
+
+            <!-- Pending results -->
+            @if (pendingMatches().length > 0) {
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2>Resultados pendentes</h2>
+                        <span class="badge-count">{{ pendingMatches().length }}</span>
+                    </div>
+                    <div class="match-mini-list">
+                        @for (item of pendingMatches(); track item.match.id) {
+                            <a [routerLink]="['/matches', item.match.id]" class="match-mini-row pending-row">
+                                <span class="match-mini-date">{{ item.match.dateTime | matchDate:'short' }}</span>
+                                <span class="match-mini-club">{{ item.clubName }}</span>
                                 <span class="arrow">›</span>
                             </a>
                         }
                     </div>
-                }
-            </section>
+                </section>
+            }
 
-            <!-- Member Clubs -->
-            <section class="section-card">
-                <div class="section-header">
-                    <h2>Clubes como Membro</h2>
-                    <a routerLink="/clubs" class="btn-link">Ver todos →</a>
-                </div>
-                @if (memberClubs().length === 0) {
-                    <div class="empty-section">
-                        <app-svg-icon
-                                name='stadium'
-                                size='45px'
-                                ariaLabel='Stadium icon'>
-                        </app-svg-icon>
-                        <p>Nenhum clube como membro.</p>
+            <!-- Upcoming matches -->
+            @if (upcomingMatches().length > 0) {
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2>Próximas partidas</h2>
                     </div>
-                } @else {
-                    <div class="club-list">
-                        @for (club of memberClubs().slice(0, 5); track club.id) {
-                            <a [routerLink]="['/clubs', club.id]" class="club-row member-club" (click)="selectClub(club, 'MEMBER')">
-                                <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
-                                <div class="club-info">
-                                    <span class="club-name">{{ club.name }}</span>
-                                    <span class="club-nick">{{ '@' + club.nickname }}</span>
-                                </div>
+                    <div class="result-mini-list">
+                        @for (item of upcomingMatches(); track item.match.id) {
+                            <a [routerLink]="['/matches', item.match.id]" class="result-mini-row upcoming-row">
+                                <span class="result-club">{{ item.clubName }}</span>
+                                <app-svg-icon class="result-badge" name="calendar_today" size="16px"
+                                              ariaLabel="Próxima partida"></app-svg-icon>
+                                <span class="result-date">{{ item.match.dateTime | matchDate:'short' }}</span>
                                 <span class="arrow">›</span>
                             </a>
                         }
                     </div>
-                }
-            </section>
-        </div>
+                </section>
+            }
 
-        <!-- Pending results -->
-        @if (pendingMatches().length > 0) {
-            <section class="section-card">
-                <div class="section-header">
-                    <h2>Resultados pendentes</h2>
-                    <span class="badge-count">{{ pendingMatches().length }}</span>
-                </div>
-                <div class="match-mini-list">
-                    @for (item of pendingMatches(); track item.match.id) {
-                        <a [routerLink]="['/matches', item.match.id]" class="match-mini-row pending-row">
-                            <span class="match-mini-date">{{ item.match.dateTime | matchDate:'short' }}</span>
-                            <span class="match-mini-club">{{ item.clubName }}</span>
-                            <span class="arrow">›</span>
-                        </a>
-                    }
-                </div>
-            </section>
-        }
+            <!-- Recent results -->
+            @if (recentResults().length > 0) {
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2>Últimos resultados</h2>
+                    </div>
+                    <div class="result-mini-list">
+                        @for (item of recentResults(); track item.match.id) {
+                            <a [routerLink]="['/matches', item.match.id]" class="result-mini-row">
+                                <span class="result-club">{{ item.clubName }}</span>
+                                <app-svg-icon class="result-badge" name="trophy" size="16px"
+                                              ariaLabel="Campeão"></app-svg-icon>
+                                <span class="result-date">{{ item.match.dateTime | matchDate:'short' }}</span>
+                                <span class="arrow">›</span>
+                            </a>
+                        }
+                    </div>
+                </section>
+            }
 
-        <!-- Upcoming matches -->
-        @if (upcomingMatches().length > 0) {
-            <section class="section-card">
-                <div class="section-header">
-                    <h2>Próximas partidas</h2>
-                </div>
-                <div class="result-mini-list">
-                    @for (item of upcomingMatches(); track item.match.id) {
-                        <a [routerLink]="['/matches', item.match.id]" class="result-mini-row upcoming-row">
-                            <span class="result-club">{{ item.clubName }}</span>
-                            <app-svg-icon class="result-badge" name="calendar_today" size="16px" ariaLabel="Próxima partida"></app-svg-icon>
-                            <span class="result-date">{{ item.match.dateTime | matchDate:'short' }}</span>
-                            <span class="arrow">›</span>
-                        </a>
-                    }
-                </div>
-            </section>
-        }
-
-        <!-- Recent results -->
-        @if (recentResults().length > 0) {
-            <section class="section-card">
-                <div class="section-header">
-                    <h2>Últimos resultados</h2>
-                </div>
-                <div class="result-mini-list">
-                    @for (item of recentResults(); track item.match.id) {
-                        <a [routerLink]="['/matches', item.match.id]" class="result-mini-row">
-                            <span class="result-club">{{ item.clubName }}</span>
-                            <app-svg-icon class="result-badge" name="trophy" size="16px" ariaLabel="Campeão"></app-svg-icon>
-                            <span class="result-date">{{ item.match.dateTime | matchDate:'short' }}</span>
-                            <span class="arrow">›</span>
-                        </a>
-                    }
-                </div>
-            </section>
-        }
         } @placeholder {
-            <app-loading-spinner [size]="20" label="Carregando dados..." />
+            <app-loading-spinner [size]="20" label="Carregando dados..."/>
         }
 
     }
