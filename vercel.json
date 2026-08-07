@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/geratimes-client/browser",
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/((?!api/|assets/|.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|txt)).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
