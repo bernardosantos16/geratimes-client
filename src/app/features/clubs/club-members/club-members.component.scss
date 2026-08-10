@@ -1,3 +1,5 @@
+:host { display: block; }
+
 /* Members table */
 .members-table {
   display: flex; flex-direction: column; gap: 0.25rem; overflow-x: auto; padding-bottom: 0.15rem;
