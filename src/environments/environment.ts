@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://geniofc.duckdns.org',
+  apiUrl: 'https://api.geniofc.com.br',
 };
