@@ -24,73 +24,75 @@
 
         <span class="members-length">Número de membros: {{sortedMembers().length}}</span>
 
-        <!-- Desktop: table view -->
-        <div class="members-table desktop-only">
-            <div class="table-header">
-                <button class="col-sort col-name" (click)="setSort('name')">
-                    Nome
-                    <span class="sort-arrow">{{ sortIndicator('name') }}</span>
-                </button>
-                @if (store.userRole() === 'DIRECTOR') {
-                    <button class="col-sort col-rating" (click)="setSort('rating')">
-                        Nível
-                        <span class="sort-arrow">{{ sortIndicator('rating') }}</span>
+        @if (isDesktop()) {
+            <!-- Desktop: table view -->
+            <div class="members-table">
+                <div class="table-header">
+                    <button class="col-sort col-name" (click)="setSort('name')">
+                        Nome
+                        <span class="sort-arrow">{{ sortIndicator('name') }}</span>
                     </button>
-                }
-                <button class="col-sort col-stat" (click)="setSort('timesMvp')">
-                    MVP
-                    <span class="sort-arrow">{{ sortIndicator('timesMvp') }}</span>
-                </button>
-                <button class="col-sort col-stat" (click)="setSort('timesChampion')">
-                    Campeão
-                    <span class="sort-arrow">{{ sortIndicator('timesChampion') }}</span>
-                </button>
-            </div>
-            @for (member of sortedMembers(); track $index) {
-                <div class="table-row" [class.clickable]="store.userRole() === 'DIRECTOR'"
-                     (click)="store.userRole() === 'DIRECTOR' && openEditMember(member)">
-                    <span class="member-name">{{ member.name }}
-                        @if (member.clubRole === 'DIRECTOR') {
-                            <span class="role-badge" [class.director]="member.clubRole === 'DIRECTOR'">
-                                {{ member.clubRole | clubRole }}
-                            </span>
-                        }
-                    </span>
                     @if (store.userRole() === 'DIRECTOR') {
-                        <app-square-rating [value]="member.rating ?? 0"/>
+                        <button class="col-sort col-rating" (click)="setSort('rating')">
+                            Nível
+                            <span class="sort-arrow">{{ sortIndicator('rating') }}</span>
+                        </button>
                     }
-                    <span class="mvp-count">{{ member.timesMvp ?? 0 }}x</span>
-                    <span class="mvp-count">{{ member.timesChampion ?? 0 }}x</span>
+                    <button class="col-sort col-stat" (click)="setSort('timesMvp')">
+                        MVP
+                        <span class="sort-arrow">{{ sortIndicator('timesMvp') }}</span>
+                    </button>
+                    <button class="col-sort col-stat" (click)="setSort('timesChampion')">
+                        Campeão
+                        <span class="sort-arrow">{{ sortIndicator('timesChampion') }}</span>
+                    </button>
                 </div>
-            }
-        </div>
+                @for (member of sortedMembers(); track $index) {
+                    <div class="table-row" [class.clickable]="store.userRole() === 'DIRECTOR'"
+                         (click)="store.userRole() === 'DIRECTOR' && openEditMember(member)">
+                        <span class="member-name">{{ member.name }}
+                            @if (member.clubRole === 'DIRECTOR') {
+                                <span class="role-badge" [class.director]="member.clubRole === 'DIRECTOR'">
+                                    {{ member.clubRole | clubRole }}
+                                </span>
+                            }
+                        </span>
+                        @if (store.userRole() === 'DIRECTOR') {
+                            <app-square-rating [value]="member.rating ?? 0"/>
+                        }
+                        <span class="mvp-count">{{ member.timesMvp ?? 0 }}x</span>
+                        <span class="mvp-count">{{ member.timesChampion ?? 0 }}x</span>
+                    </div>
+                }
+            </div>
+        } @else {
+            <!-- Mobile: sort controls -->
+            <div class="mobile-sort">
+                <label for="mobileSortSelect">Ordenar por:</label>
+                <select id="mobileSortSelect" class="sort-select" (change)="onSortSelect($event)">
+                    <option value="name-asc"  [selected]="sortField() === 'name'        && sortDirection() === 'asc'">Nome A-Z</option>
+                    <option value="name-desc" [selected]="sortField() === 'name'        && sortDirection() === 'desc'">Nome Z-A</option>
+                    <option value="rating-desc" [selected]="sortField() === 'rating'      && sortDirection() === 'desc'">Maior nível</option>
+                    <option value="rating-asc"  [selected]="sortField() === 'rating'      && sortDirection() === 'asc'">Menor nível</option>
+                    <option value="timesMvp-desc" [selected]="sortField() === 'timesMvp'   && sortDirection() === 'desc'">Mais MVP</option>
+                    <option value="timesMvp-asc"  [selected]="sortField() === 'timesMvp'   && sortDirection() === 'asc'">Menos MVP</option>
+                    <option value="timesChampion-desc" [selected]="sortField() === 'timesChampion' && sortDirection() === 'desc'">Mais campeão</option>
+                    <option value="timesChampion-asc"  [selected]="sortField() === 'timesChampion' && sortDirection() === 'asc'">Menos campeão</option>
+                </select>
+            </div>
 
-        <!-- Mobile: sort controls -->
-        <div class="mobile-sort">
-            <label for="mobileSortSelect">Ordenar por:</label>
-            <select id="mobileSortSelect" class="sort-select" (change)="onSortSelect($event)">
-                <option value="name-asc"  [selected]="sortField() === 'name'        && sortDirection() === 'asc'">Nome A-Z</option>
-                <option value="name-desc" [selected]="sortField() === 'name'        && sortDirection() === 'desc'">Nome Z-A</option>
-                <option value="rating-desc" [selected]="sortField() === 'rating'      && sortDirection() === 'desc'">Maior nível</option>
-                <option value="rating-asc"  [selected]="sortField() === 'rating'      && sortDirection() === 'asc'">Menor nível</option>
-                <option value="timesMvp-desc" [selected]="sortField() === 'timesMvp'   && sortDirection() === 'desc'">Mais MVP</option>
-                <option value="timesMvp-asc"  [selected]="sortField() === 'timesMvp'   && sortDirection() === 'asc'">Menos MVP</option>
-                <option value="timesChampion-desc" [selected]="sortField() === 'timesChampion' && sortDirection() === 'desc'">Mais campeão</option>
-                <option value="timesChampion-asc"  [selected]="sortField() === 'timesChampion' && sortDirection() === 'asc'">Menos campeão</option>
-            </select>
-        </div>
-
-        <!-- Mobile: card grid -->
-        <div class="members-cards">
-            @for (member of sortedMembers(); track $index) {
-                <app-member-card
-                    [member]="member"
-                    [clickable]="store.userRole() === 'DIRECTOR'"
-                    [showRating]="store.userRole() === 'DIRECTOR'"
-                    (selected)="openEditMember($event)"
-                />
-            }
-        </div>
+            <!-- Mobile: card grid -->
+            <div class="members-cards">
+                @for (member of sortedMembers(); track $index) {
+                    <app-member-card
+                        [member]="member"
+                        [clickable]="store.userRole() === 'DIRECTOR'"
+                        [showRating]="store.userRole() === 'DIRECTOR'"
+                        (selected)="openEditMember($event)"
+                    />
+                }
+            </div>
+        }
     }
 </div>
 

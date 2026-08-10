@@ -3,26 +3,22 @@
   display: flex; flex-direction: column; gap: 0.25rem; overflow-x: auto; padding-bottom: 0.15rem;
 }
 
-.members-cards, .mobile-sort { display: none; }
+.members-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
 
-@media (max-width: 1023px) {
-  .desktop-only { display: none !important; }
-  .members-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-bottom: 0.5rem;
-  }
-  .mobile-sort {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-    color: var(--text2);
+.mobile-sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--text2);
 
-    label { flex-shrink: 0; font-weight: 500; }
-  }
+  label { flex-shrink: 0; font-weight: 500; }
 }
 
 .sort-select {

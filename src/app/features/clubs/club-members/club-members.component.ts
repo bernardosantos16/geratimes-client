@@ -29,6 +29,8 @@ export class ClubMembersComponent implements OnInit {
     private readonly toast = inject(ToastService);
     private readonly fb = inject(FormBuilder).nonNullable;
     private readonly destroyRef = inject(DestroyRef);
+    private readonly mediaQuery = window.matchMedia('(min-width: 1024px)');
+    readonly isDesktop = signal(this.mediaQuery.matches);
     readonly store = inject(ClubDetailStore);
 
     @ViewChild('confirmDeleteMember') confirmDeleteMember!: ConfirmDialogComponent;
@@ -77,6 +79,10 @@ export class ClubMembersComponent implements OnInit {
                 next: (res) => this.store.members.set(res.content),
                 error: (err: unknown) => this.toast.error('Erro ao carregar membros.'),
             });
+
+        const mqHandler = (e: MediaQueryListEvent) => this.isDesktop.set(e.matches);
+        this.mediaQuery.addEventListener('change', mqHandler);
+        this.destroyRef.onDestroy(() => this.mediaQuery.removeEventListener('change', mqHandler));
     }
 
     setSort(field: 'name' | 'rating' | 'timesMvp' | 'timesChampion'): void {
