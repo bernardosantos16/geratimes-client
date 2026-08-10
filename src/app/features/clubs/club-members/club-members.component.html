@@ -65,6 +65,21 @@
             }
         </div>
 
+        <!-- Mobile: sort controls -->
+        <div class="mobile-sort">
+            <label for="mobileSortSelect">Ordenar por:</label>
+            <select id="mobileSortSelect" class="sort-select" (change)="onSortSelect($event)">
+                <option value="name-asc"  [selected]="sortField() === 'name'        && sortDirection() === 'asc'">Nome A-Z</option>
+                <option value="name-desc" [selected]="sortField() === 'name'        && sortDirection() === 'desc'">Nome Z-A</option>
+                <option value="rating-desc" [selected]="sortField() === 'rating'      && sortDirection() === 'desc'">Maior nível</option>
+                <option value="rating-asc"  [selected]="sortField() === 'rating'      && sortDirection() === 'asc'">Menor nível</option>
+                <option value="timesMvp-desc" [selected]="sortField() === 'timesMvp'   && sortDirection() === 'desc'">Mais MVP</option>
+                <option value="timesMvp-asc"  [selected]="sortField() === 'timesMvp'   && sortDirection() === 'asc'">Menos MVP</option>
+                <option value="timesChampion-desc" [selected]="sortField() === 'timesChampion' && sortDirection() === 'desc'">Mais campeão</option>
+                <option value="timesChampion-asc"  [selected]="sortField() === 'timesChampion' && sortDirection() === 'asc'">Menos campeão</option>
+            </select>
+        </div>
+
         <!-- Mobile: card grid -->
         <div class="members-cards">
             @for (member of sortedMembers(); track $index) {

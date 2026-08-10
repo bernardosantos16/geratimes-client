@@ -38,3 +38,23 @@
 .empty-msg { text-align: center; padding: 2rem; color: var(--text2); font-size: 0.9rem; }
 
 .tab-content { padding-top: 0.5rem; }
+
+@media (max-width: 1023px) {
+  .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+  .tab { flex-shrink: 0; }
+}
+
+@media (max-width: 480px) {
+  .inline-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-input { min-width: 0; }
+  .rating-inline { justify-content: center; }
+}

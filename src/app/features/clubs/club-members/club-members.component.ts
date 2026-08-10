@@ -88,6 +88,13 @@ export class ClubMembersComponent implements OnInit {
         }
     }
 
+    onSortSelect(event: Event): void {
+        const target = event.target as HTMLSelectElement;
+        const [field, direction] = target.value.split('-') as ['name' | 'rating' | 'timesMvp' | 'timesChampion', 'asc' | 'desc'];
+        this.sortField.set(field);
+        this.sortDirection.set(direction);
+    }
+
     sortIndicator(field: string): string {
         if (this.sortField() !== field) return '';
         return this.sortDirection() === 'asc' ? '▲' : '▼';
