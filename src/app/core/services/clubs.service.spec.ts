@@ -64,10 +64,10 @@ describe('ClubsService', () => {
     req.flush({ ...club, name: 'New FC' });
   });
 
-  it('should update club via PUT', () => {
+  it('should update club via PATCH', () => {
     service.updateClub('c1', { name: 'Updated' }).subscribe();
     const req = httpTesting.expectOne(`${base}/c1`);
-    expect(req.request.method).toBe('PUT');
+    expect(req.request.method).toBe('PATCH');
     expect(req.request.body.name).toBe('Updated');
     req.flush({ ...club, name: 'Updated' });
   });

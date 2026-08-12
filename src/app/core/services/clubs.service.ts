@@ -41,7 +41,7 @@ export class ClubsService {
   }
 
   updateClub(id: string, dto: UpdateClubRequestDTO): Observable<ClubResponseDTO> {
-    return this.http.put<ClubResponseDTO>(`${this.baseUrl}/${id}`, dto);
+    return this.http.patch<ClubResponseDTO>(`${this.baseUrl}/${id}`, dto);
   }
 
   deleteClub(id: string): Observable<void> {
