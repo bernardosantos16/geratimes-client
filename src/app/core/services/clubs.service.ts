@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   ClubResponseDTO,
   CreateClubRequestDTO,
@@ -34,6 +34,12 @@ export class ClubsService {
 
   getClubByNickname(nickname: string): Observable<ClubResponseDTO> {
     return this.http.get<ClubResponseDTO>(`${this.baseUrl}/nickname/${nickname}`);
+  }
+
+  checkNicknameAvailable(nickname: string): Observable<boolean> {
+    return this.http
+      .get<{ available: boolean }>(`${this.baseUrl}/nickname/${nickname}/available`)
+      .pipe(map((res) => res.available));
   }
 
   createClub(dto: CreateClubRequestDTO): Observable<ClubResponseDTO> {

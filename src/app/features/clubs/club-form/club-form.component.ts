@@ -4,13 +4,18 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import {
+  ReactiveFormsModule, FormBuilder, FormGroup, Validators,
+  AbstractControl, AsyncValidatorFn, ValidationErrors
+} from '@angular/forms';
+import { forkJoin, debounceTime, distinctUntilChanged, first, map, of, switchMap, catchError, Observable } from 'rxjs';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { StepIndicatorComponent } from '@shared/components/step-indicator/step-indicator.component';
 import { AddJerseyRequestDTO, CreateClubRequestDTO, UpdateClubRequestDTO } from '@core/models/api.models';
+
+const NICKNAME_PATTERN = /^[a-z0-9_-]{3,24}$/;
 
 @Component({
   selector: 'app-club-form',
@@ -47,7 +52,7 @@ export class ClubFormComponent implements OnInit {
 
   readonly form = this.fb.group({
     name:     ['', [Validators.required, Validators.minLength(1)]],
-    nickname: ['', [Validators.minLength(3), Validators.maxLength(24)]],
+    nickname: ['', [Validators.required, Validators.pattern(NICKNAME_PATTERN)]],
   });
 
   readonly jerseyForms = signal<FormGroup[]>([]);
@@ -56,8 +61,12 @@ export class ClubFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.editId = this.route.snapshot.paramMap.get('id');
+    const nicknameControl = this.form.controls.nickname;
     if (this.editId) {
       this.isEdit.set(true);
+      // No edit o apelido é opcional (mantém o atual se não preenchido).
+      nicknameControl.setValidators([Validators.pattern(NICKNAME_PATTERN)]);
+      nicknameControl.updateValueAndValidity();
       this.clubsService.getClubById(this.editId).pipe(
         takeUntilDestroyed(this.destroyRef)
       ).subscribe({
@@ -65,10 +74,33 @@ export class ClubFormComponent implements OnInit {
         error: (err: unknown) => { this.toast.error('Clube não encontrado.'); this.router.navigate(['/clubs']).catch(() => {}); },
       });
     } else {
+      // No create o apelido é obrigatório e validado quanto à disponibilidade.
+      nicknameControl.setValidators([Validators.required, Validators.pattern(NICKNAME_PATTERN)]);
+      nicknameControl.setAsyncValidators(this.nicknameAvailabilityValidator());
+      nicknameControl.updateValueAndValidity();
       this.addJerseyRow({ name: 'Time 1', hexColor: '#4dff8f' });
       this.addJerseyRow({ name: 'Time 2', hexColor: '#4d9fff' });
       this.addJerseyRow({ name: 'Goleiros', hexColor: '#ff4d6a', isGoalkeeper: true });
     }
+  }
+
+  private nicknameAvailabilityValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      if (!String(control.value ?? '').trim()) {
+        return of(null);
+      }
+      return control.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((value: unknown) =>
+          this.clubsService.checkNicknameAvailable(String(value ?? '').trim()).pipe(
+            map((available) => (available ? null : { nicknameTaken: true })),
+            catchError(() => of(null)),
+          )
+        ),
+        first(),
+      );
+    };
   }
 
   goToJerseys(): void {

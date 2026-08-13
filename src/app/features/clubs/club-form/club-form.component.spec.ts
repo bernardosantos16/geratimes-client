@@ -7,10 +7,10 @@ import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubResponseDTO } from '@core/models/api.models';
 
-const CLUB: ClubResponseDTO = { id: 'c1', name: 'Meu Clube', nickname: 'MC1' };
+const CLUB: ClubResponseDTO = { id: 'c1', name: 'Meu Clube', nickname: 'mc1' };
 
 function validClubForm(component: ClubFormComponent) {
-  component.form.patchValue({ name: 'Novo Clube', nickname: 'Nic' });
+  component.form.patchValue({ name: 'Novo Clube', nickname: 'nic' });
 }
 
 describe('ClubFormComponent', () => {
@@ -45,6 +45,7 @@ describe('ClubFormComponent', () => {
         createClub: vi.fn().mockReturnValue(of(CLUB)),
         updateClub: vi.fn(),
         addJersey: vi.fn().mockReturnValue(of({})),
+        checkNicknameAvailable: vi.fn().mockReturnValue(of(true)),
       };
       toastMock = { success: vi.fn(), error: vi.fn(), warning: vi.fn() };
       setup({});
@@ -123,6 +124,7 @@ describe('ClubFormComponent', () => {
         createClub: vi.fn(),
         updateClub: vi.fn().mockReturnValue(of(CLUB)),
         addJersey: vi.fn(),
+        checkNicknameAvailable: vi.fn().mockReturnValue(of(true)),
       };
       toastMock = { success: vi.fn(), error: vi.fn(), warning: vi.fn() };
       setup({ id: 'c1' });
@@ -136,7 +138,7 @@ describe('ClubFormComponent', () => {
 
     it('should update club on edit submit', () => {
       fixture.detectChanges();
-      component.form.patchValue({ name: 'Clube Editado', nickname: 'CE1' });
+      component.form.patchValue({ name: 'Clube Editado', nickname: 'ce1' });
 
       component.onSubmit();
 

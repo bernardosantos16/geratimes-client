@@ -23,13 +23,19 @@
 
                 <div class="form-group full">
                     <label for="nickname">
-                        Apelido
-                        <span class="hint">(usado para identificação)</span>
+                        Apelido@if (!isEdit()) { * }
+                        <span class="hint">(minúsculas, números, _ ou -)</span>
                     </label>
                     <input id="nickname" type="text" formControlName="nickname"
                            placeholder="Ex: ferino" class="form-input" />
-                    @if (f['nickname'].invalid && f['nickname'].touched) {
-                        <span class="form-error">Apelido deve ter entre 3 e 24 caracteres</span>
+                    @if (f['nickname'].touched) {
+                        @if (f['nickname'].hasError('required')) {
+                            <span class="form-error">Apelido é obrigatório</span>
+                        } @else if (f['nickname'].hasError('pattern')) {
+                            <span class="form-error">Apelido deve ter de 3 a 24 caracteres (minúsculas, números, _ ou -)</span>
+                        } @else if (f['nickname'].hasError('nicknameTaken')) {
+                            <span class="form-error">Apelido já está em uso</span>
+                        }
                     }
                 </div>
             </div>
@@ -86,7 +92,7 @@
             <a routerLink="/clubs" class="btn-cancel">Cancelar</a>
 
             @if (!isEdit() && step() === 1) {
-                <button type="button" class="btn-next" (click)="goToJerseys()">Próximo</button>
+                <button type="button" class="btn-next" (click)="goToJerseys()" [disabled]="form.invalid">Próximo</button>
             } @else {
                 <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
                     @if (loading()) { <span class="spinner"></span> }
