@@ -4,11 +4,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { UsersService } from './users.service';
 import { PageUserResponseDTO, UserResponseDTO } from '../models/api.models';
+import { environment } from '../../../environments/environment';
 
 describe('UsersService', () => {
   let service: UsersService;
   let httpTesting: HttpTestingController;
-  const base = 'https://api.geniofc.com.br/api/users';
+  const base = `${environment.apiUrl}/api/users`;
   const user: UserResponseDTO = { id: 'u1', name: 'John', nickname: 'john', login: 'john@example.com' };
 
   beforeEach(() => {

@@ -8,11 +8,12 @@ import {
   PageClubMemberResponseDTO,
 } from '../models/api.models';
 import { HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 describe('ClubsService', () => {
   let service: ClubsService;
   let httpTesting: HttpTestingController;
-  const base = 'https://api.geniofc.com.br/api/clubs';
+  const base = `${environment.apiUrl}/api/clubs`;
   const club: ClubResponseDTO = { id: 'c1', name: 'Ferino FC', nickname: 'ferino', joinPolicy: 'INVITE_ONLY' };
   const member: ClubMemberResponseDTO = { id: 1, name: 'Player 1', clubRole: 'MEMBER' };
   const jersey: ClubJerseyResponseDTO = { id: 10, name: 'Home', hexColor: '#4dff8f', isGoalkeeperJersey: false, clubId: 'c1' };

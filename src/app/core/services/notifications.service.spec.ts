@@ -4,11 +4,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { NotificationsService } from './notifications.service';
 import { PageNotificationResponseDTO } from '../models/api.models';
+import { environment } from '../../../environments/environment';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
   let httpTesting: HttpTestingController;
-  const base = 'https://api.geniofc.com.br/api/notifications';
+  const base = `${environment.apiUrl}/api/notifications`;
   const emptyPage: PageNotificationResponseDTO = {
     content: [],
     totalElements: 0,
