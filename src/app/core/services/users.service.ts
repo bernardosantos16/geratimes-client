@@ -9,6 +9,7 @@ import {
   SendEmailTokenRequestDTO,
   VerifyEmailRequestDTO,
   VerifyEmailResponseDTO,
+  ResetPasswordRequestDTO,
 } from '../models/api.models';
 import { environment } from '../../../environments/environment';
 import { buildPageableParams } from '../utils/http-params.utils';
@@ -40,5 +41,13 @@ export class UsersService {
 
   sendVerificationCode(login: string): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/email`, { login } as SendEmailTokenRequestDTO);
+  }
+
+  forgotPassword(login: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/forgot-password`, { login } as SendEmailTokenRequestDTO);
+  }
+
+  resetPassword(dto: ResetPasswordRequestDTO): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/reset-password`, dto);
   }
 }

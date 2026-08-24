@@ -41,6 +41,22 @@ export const routes: Routes = [
           ),
         title: 'Verificar e-mail — Ferino',
       },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password.component').then(
+            (m) => m.ForgotPasswordComponent
+          ),
+        title: 'Esqueci minha senha — Ferino',
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./features/auth/reset-password/reset-password.component').then(
+            (m) => m.ResetPasswordComponent
+          ),
+        title: 'Redefinir senha — Ferino',
+      },
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],
   },

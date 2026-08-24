@@ -43,6 +43,8 @@
                 <div class="server-error">{{ serverError() }}</div>
             }
 
+            <a class="forgot-password" routerLink="/auth/forgot-password">Esqueci minha senha?</a>
+
             <button type="submit" class="btn-submit" [disabled]="loading() || form.invalid">
                 @if (loading()) { <span class="spinner"></span> }
                 {{ loading() ? 'Entrando...' : 'Entrar' }}

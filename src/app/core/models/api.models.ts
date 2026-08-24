@@ -39,6 +39,12 @@ export interface VerifyEmailResponseDTO {
   registrationToken: string;  // JWT valid for 30 min, used in step 3
 }
 
+export interface ResetPasswordRequestDTO {
+  email: string;       // max 100
+  token: string;       // 6-digit code
+  newPassword: string; // min 8, max 72
+}
+
 export interface UserResponseDTO {
   id: string;         // uuid
   name: string;
