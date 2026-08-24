@@ -40,14 +40,14 @@ describe('SvgIconComponent', () => {
     expect(wrapper.nativeElement.textContent).toContain('icon');
   });
 
-  it('should show warning fallback when icon does not exist', () => {
+  it('should render empty fallback when icon does not exist', () => {
     mockRegistry.has = () => false;
     component.name = 'unknown';
     fixture.detectChanges();
 
     const missing = fixture.debugElement.query(By.css('.icon-missing'));
     expect(missing).toBeTruthy();
-    expect(missing.nativeElement.textContent).toContain('⚠');
+    expect(missing.nativeElement.textContent).toBe('');
   });
 
   it('should apply custom size styles', () => {

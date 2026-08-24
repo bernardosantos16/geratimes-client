@@ -11,6 +11,7 @@ import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/load
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
+import { DiscoveryComponent } from '@features/discovery/discovery.component';
 
 @Component({
   selector: 'app-clubs-list',
@@ -18,6 +19,7 @@ import {SvgIconComponent} from "@shared/components/svg-icon/svg-icon.component";
   imports: [
     CommonModule, RouterModule, PageHeaderComponent,
     LoadingSpinnerComponent, EmptyStateComponent, ConfirmDialogComponent, SvgIconComponent,
+    DiscoveryComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'clubs-list.component.html',

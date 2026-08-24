@@ -21,8 +21,8 @@ describe('DashboardService', () => {
     httpTesting.verify();
   });
 
-  const directorClub: ClubResponseDTO = { id: 'c1', name: 'Ferino FC', nickname: 'ferino' };
-  const memberClub: ClubResponseDTO = { id: 'c2', name: 'Other FC', nickname: 'other' };
+  const directorClub: ClubResponseDTO = { id: 'c1', name: 'Ferino FC', nickname: 'ferino', joinPolicy: 'INVITE_ONLY' };
+  const memberClub: ClubResponseDTO = { id: 'c2', name: 'Other FC', nickname: 'other', joinPolicy: 'OPEN' };
 
   function emptyPage(): PageMatchResponseDTO {
     return { content: [], totalElements: 0, totalPages: 0, number: 0, size: 15,
@@ -46,7 +46,7 @@ describe('DashboardService', () => {
     httpTesting.expectOne((r) => r.url.includes('/api/clubs') && r.params.get('clubRole') === 'MEMBER')
       .flush([memberClub]);
     // matchesPendingResult uses getMatchesByClub with size=100
-    httpTesting.expectOne((r) => r.url === 'https://gerenciador-ferino.up.railway.app/api/matches' && r.params.get('clubId') === 'c1' && r.params.get('size') === '100')
+    httpTesting.expectOne((r) => r.url === 'https://api.geniofc.com.br/api/matches' && r.params.get('clubId') === 'c1' && r.params.get('size') === '100')
       .flush(emptyPage());
     // upcoming count for directorClub via getMatchesByClubAndUpcoming
     httpTesting.expectOne((r) => r.url.includes('/api/matches/upcoming') && r.params.get('clubId') === 'c1' && r.params.get('size') === '1')
@@ -55,10 +55,10 @@ describe('DashboardService', () => {
     httpTesting.expectOne((r) => r.url.includes('/api/matches/upcoming') && r.params.get('clubId') === 'c2' && r.params.get('size') === '1')
       .flush(emptyPage());
     // recent results for directorClub via getMatchesByClub
-    httpTesting.expectOne((r) => r.url === 'https://gerenciador-ferino.up.railway.app/api/matches' && r.params.get('clubId') === 'c1' && r.params.get('size') === '15')
+    httpTesting.expectOne((r) => r.url === 'https://api.geniofc.com.br/api/matches' && r.params.get('clubId') === 'c1' && r.params.get('size') === '15')
       .flush(emptyPage());
     // recent results for memberClub
-    httpTesting.expectOne((r) => r.url === 'https://gerenciador-ferino.up.railway.app/api/matches' && r.params.get('clubId') === 'c2' && r.params.get('size') === '15')
+    httpTesting.expectOne((r) => r.url === 'https://api.geniofc.com.br/api/matches' && r.params.get('clubId') === 'c2' && r.params.get('size') === '15')
       .flush(emptyPage());
     // upcoming matches list for directorClub
     httpTesting.expectOne((r) => r.url.includes('/api/matches/upcoming') && r.params.get('clubId') === 'c1' && r.params.get('size') === '5')

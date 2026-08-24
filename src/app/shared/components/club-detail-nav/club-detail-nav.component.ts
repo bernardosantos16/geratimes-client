@@ -37,11 +37,12 @@ export class ClubDetailNavComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
     readonly store = inject(ClubDetailStore);
 
-    readonly tabs = [
+    readonly tabs: { label: string; icon: string; route: string; directorOnly?: boolean }[] = [
         { label: 'Membros', icon: 'groups', route: 'members' },
         { label: 'Camisas', icon: 'apparel', route: 'jerseys' },
         { label: 'Partidas', icon: 'soccer_ball', route: 'upcoming' },
-    ] as const;
+        { label: 'Solicitações', icon: 'notifications', route: 'membership-requests', directorOnly: true },
+    ];
 
     ngOnInit(): void {
         const clubId = this.route.snapshot.paramMap.get('id')!;

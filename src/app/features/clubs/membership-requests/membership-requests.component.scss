@@ -1,0 +1,156 @@
+:host { display: block; }
+
+.invite-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text3);
+  }
+
+  .btn-primary {
+    align-self: flex-start;
+  }
+}
+
+.token-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+
+  .token-value {
+    font-family: monospace;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    color: var(--text);
+    word-break: break-all;
+  }
+}
+
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.section-title {
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--text3);
+}
+
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.request-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+}
+
+.request-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.request-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.request-nick {
+  font-size: 0.78rem;
+  color: var(--text3);
+}
+
+.request-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-approve,
+.btn-reject {
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-approve {
+  background: var(--accent);
+  color: #000;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 0 14px var(--accent-dim);
+  }
+}
+
+.btn-reject {
+  background: transparent;
+  color: var(--red);
+  border-color: var(--red);
+
+  &:hover:not(:disabled) {
+    background: var(--red-dim);
+  }
+}

@@ -4,6 +4,17 @@
   gap: 1rem;
 }
 
+.my-clubs {
+  margin-top: 2rem;
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+}
+
 .club-card {
   background: var(--card-bg);
   border: 1px solid var(--border);

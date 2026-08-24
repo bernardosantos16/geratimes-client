@@ -8,7 +8,7 @@ import { ClubContextService } from '@core/services/club-context.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubResponseDTO } from '@core/models/api.models';
 
-const CLUB: ClubResponseDTO = { id: 'c1', name: 'Meu Clube', nickname: 'MC' };
+const CLUB: ClubResponseDTO = { id: 'c1', name: 'Meu Clube', nickname: 'MC', joinPolicy: 'INVITE_ONLY' };
 
 describe('ClubsListComponent', () => {
   let fixture: ComponentFixture<ClubsListComponent>;

@@ -12,8 +12,8 @@ import { HttpParams } from '@angular/common/http';
 describe('ClubsService', () => {
   let service: ClubsService;
   let httpTesting: HttpTestingController;
-  const base = 'https://gerenciador-ferino.up.railway.app/api/clubs';
-  const club: ClubResponseDTO = { id: 'c1', name: 'Ferino FC', nickname: 'ferino' };
+  const base = 'https://api.geniofc.com.br/api/clubs';
+  const club: ClubResponseDTO = { id: 'c1', name: 'Ferino FC', nickname: 'ferino', joinPolicy: 'INVITE_ONLY' };
   const member: ClubMemberResponseDTO = { id: 1, name: 'Player 1', clubRole: 'MEMBER' };
   const jersey: ClubJerseyResponseDTO = { id: 10, name: 'Home', hexColor: '#4dff8f', isGoalkeeperJersey: false, clubId: 'c1' };
   const emptyPage: PageClubMemberResponseDTO = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 100, first: true, last: true, empty: true, numberOfElements: 0 };
@@ -138,5 +138,68 @@ describe('ClubsService', () => {
     const req = httpTesting.expectOne(`${base}/c1/jerseys/10`);
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
+  });
+
+  // ── Search / Membership ──
+
+  it('should search clubs by query via GET', () => {
+    service.searchClubs('ferino').subscribe();
+    const req = httpTesting.expectOne((r) => r.url === `${base}/search` && r.params.get('q') === 'ferino');
+    expect(req.request.method).toBe('GET');
+    req.flush([club]);
+  });
+
+  it('should request join by body via POST', () => {
+    service.joinClub('c1', { token: 'ABC123' }).subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/invite`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.token).toBe('ABC123');
+    req.flush({
+      id: 1, clubId: 'c1', userId: 'u1', name: 'Test User', nickname: 'tu',
+      status: 'PENDING', requestedAt: '2026-08-24T00:00:00Z',
+    });
+  });
+
+  it('should generate invite token via POST', () => {
+    service.generateInviteToken('c1').subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/invite-token`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ token: 'A1B2C3', expiresAt: '2026-09-01T00:00:00Z' });
+  });
+
+  it('should fetch invite token via GET', () => {
+    service.getInviteToken('c1').subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/invite-token`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ token: 'A1B2C3', expiresAt: '2026-09-01T00:00:00Z' });
+  });
+
+  it('should list membership requests with status via GET', () => {
+    service.getMembershipRequests('c1', 'PENDING', { size: 50 }).subscribe();
+    const req = httpTesting.expectOne(
+      (r) => r.url === `${base}/c1/membership-requests` && r.params.get('status') === 'PENDING'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 50, first: true, last: true, empty: true, numberOfElements: 0 });
+  });
+
+  it('should approve membership request via POST', () => {
+    service.approveMembershipRequest('c1', 7).subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/membership-requests/7/approve`);
+    expect(req.request.method).toBe('POST');
+    req.flush({
+      id: 7, clubId: 'c1', userId: 'u1', name: 'Test User', nickname: 'tu',
+      status: 'APPROVED', requestedAt: '2026-08-24T00:00:00Z',
+    });
+  });
+
+  it('should reject membership request via POST', () => {
+    service.rejectMembershipRequest('c1', 7).subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/membership-requests/7/reject`);
+    expect(req.request.method).toBe('POST');
+    req.flush({
+      id: 7, clubId: 'c1', userId: 'u1', name: 'Test User', nickname: 'tu',
+      status: 'REJECTED', requestedAt: '2026-08-24T00:00:00Z',
+    });
   });
 });

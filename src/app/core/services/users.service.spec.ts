@@ -8,7 +8,7 @@ import { PageUserResponseDTO, UserResponseDTO } from '../models/api.models';
 describe('UsersService', () => {
   let service: UsersService;
   let httpTesting: HttpTestingController;
-  const base = 'https://gerenciador-ferino.up.railway.app/api/users';
+  const base = 'https://api.geniofc.com.br/api/users';
   const user: UserResponseDTO = { id: 'u1', name: 'John', nickname: 'john', login: 'john@example.com' };
 
   beforeEach(() => {

@@ -38,6 +38,17 @@
                         }
                     }
                 </div>
+
+                @if (isEdit()) {
+                    <div class="form-group full">
+                        <label for="joinPolicy">Política de ingresso</label>
+                        <select id="joinPolicy" formControlName="joinPolicy" class="form-input">
+                            <option value="INVITE_ONLY">Somente convite</option>
+                            <option value="OPEN">Aberto</option>
+                        </select>
+                        <span class="hint">"Aberto" permite que qualquer usuário solicite entrada sem token.</span>
+                    </div>
+                }
             </div>
         }
 

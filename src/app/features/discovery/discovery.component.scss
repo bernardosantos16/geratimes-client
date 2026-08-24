@@ -1,0 +1,142 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host { display: block; }
+
+.discovery {
+  @include card;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.discovery-header {
+  h2 { font-size: 1rem; font-weight: 600; color: var(--text); }
+  p { font-size: 0.85rem; color: var(--text3); margin-top: 0.25rem; }
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+  max-width: 480px;
+
+  app-svg-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--text3);
+    pointer-events: none;
+  }
+
+  .search-input {
+    @include input-base;
+    padding-left: 2.6rem;
+  }
+}
+
+.token-input {
+  @include input-base;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.result-card {
+  @include card;
+  @include card-hover;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &.is-mine {
+    border-color: var(--accent-dim);
+  }
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  &.clickable {
+    cursor: pointer;
+  }
+}
+
+.club-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.club-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+
+.club-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  @include truncate;
+}
+
+.club-nick {
+  font-size: 0.78rem;
+  color: var(--text3);
+}
+
+.policy-badge {
+  @include badge;
+  background: var(--surface2);
+  color: var(--text3);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+
+  &.open {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: rgba(77, 255, 143, 0.3);
+  }
+}
+
+.join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.join-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text2);
+}
+
+.join-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}

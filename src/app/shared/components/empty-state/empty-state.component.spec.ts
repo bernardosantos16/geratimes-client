@@ -62,11 +62,11 @@ describe('EmptyStateComponent', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it('should render custom icon text', () => {
-    component.icon = '⚽';
+  it('should render icon via svg-icon', () => {
+    component.icon = 'soccer_ball';
     fixture.detectChanges();
 
-    const icon = fixture.debugElement.query(By.css('.icon'));
-    expect(icon.nativeElement.textContent.trim()).toBe('⚽');
+    const icon = fixture.debugElement.query(By.css('app-svg-icon.icon'));
+    expect(icon).toBeTruthy();
   });
 });

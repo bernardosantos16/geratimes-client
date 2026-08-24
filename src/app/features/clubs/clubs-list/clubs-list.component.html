@@ -2,47 +2,53 @@
     <a routerLink="/clubs/new" class="btn-primary">+ Novo Clube</a>
 </app-page-header>
 
-@if (loading()) {
-    <app-loading-spinner label="Carregando clubes..." />
-} @else if (clubs().length === 0) {
-    <app-empty-state
-            icon="🏟️"
-            title="Nenhum clube ainda"
-            message="Crie seu primeiro clube e comece a organizar partidas."
-            actionLabel="Criar clube"
-            (action)="router.navigate(['/clubs/new'])" />
-} @else {
-    <div class="clubs-grid">
-        @for (club of clubs(); track club.id) {
-            <div class="club-card">
-                <div class="card-top">
-                    <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
-                    <div class="club-meta">
-                        <span class="club-name">{{ club.name }}</span>
-                        <span class="club-nick">{{ '@' + club.nickname }}</span>
+<app-discovery />
+
+<section class="my-clubs">
+    <h2 class="section-title">Meus clubes</h2>
+
+    @if (loading()) {
+        <app-loading-spinner label="Carregando clubes..." />
+    } @else if (clubs().length === 0) {
+        <app-empty-state
+                icon="stadium"
+                title="Nenhum clube ainda"
+                message="Crie seu primeiro clube e comece a organizar partidas."
+                actionLabel="Criar clube"
+                (action)="router.navigate(['/clubs/new'])" />
+    } @else {
+        <div class="clubs-grid">
+            @for (club of clubs(); track club.id) {
+                <div class="club-card">
+                    <div class="card-top">
+                        <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
+                        <div class="club-meta">
+                            <span class="club-name">{{ club.name }}</span>
+                            <span class="club-nick">{{ '@' + club.nickname }}</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <a [routerLink]="['/clubs', club.id]" class="btn-outline" (click)="openClubOverview(club.id)">Ver detalhes</a>
+                        <a [routerLink]="['/clubs', club.id, 'edit']" class="btn-icon" title="Editar">
+                            <app-svg-icon
+                                    name='edit'
+                                    size='20px'
+                                    ariaLabel='Edit Icon'>
+                            </app-svg-icon>
+                        </a>
+                        <button class="btn-icon danger" (click)="confirmDelete(club)" title="Excluir">
+                            <app-svg-icon
+                                    name='delete'
+                                    size='20px'
+                                    ariaLabel='Delete Icon'>
+                            </app-svg-icon>
+                        </button>
                     </div>
                 </div>
-                <div class="card-actions">
-                    <a [routerLink]="['/clubs', club.id]" class="btn-outline" (click)="openClubOverview(club.id)">Ver detalhes</a>
-                    <a [routerLink]="['/clubs', club.id, 'edit']" class="btn-icon" title="Editar">
-                        <app-svg-icon
-                                name='edit'
-                                size='20px'
-                                ariaLabel='Edit Icon'>
-                        </app-svg-icon>
-                    </a>
-                    <button class="btn-icon danger" (click)="confirmDelete(club)" title="Excluir">
-                        <app-svg-icon
-                                name='delete'
-                                size='20px'
-                                ariaLabel='Delete Icon'>
-                        </app-svg-icon>
-                    </button>
-                </div>
-            </div>
-        }
-    </div>
-}
+            }
+        </div>
+    }
+</section>
 
 <app-confirm-dialog
     #confirmDialog

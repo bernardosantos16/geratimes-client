@@ -53,6 +53,7 @@ export class ClubFormComponent implements OnInit {
   readonly form = this.fb.group({
     name:     ['', [Validators.required, Validators.minLength(1)]],
     nickname: ['', [Validators.required, Validators.pattern(NICKNAME_PATTERN)]],
+    joinPolicy: ['INVITE_ONLY' as 'OPEN' | 'INVITE_ONLY'],
   });
 
   readonly jerseyForms = signal<FormGroup[]>([]);

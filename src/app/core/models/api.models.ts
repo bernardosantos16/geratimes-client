@@ -55,6 +55,8 @@ export interface UserResponseDTO {
 export interface PageUserResponseDTO extends PageDTO<UserResponseDTO> {}
 
 // --------------- CLUBS ---------------
+export type JoinPolicy = 'OPEN' | 'INVITE_ONLY';
+
 export interface CreateClubRequestDTO {
   name: string;       // min 1
   nickname?: string;  // min 3, max 24
@@ -63,13 +65,58 @@ export interface CreateClubRequestDTO {
 export interface UpdateClubRequestDTO {
   name?: string;
   nickname?: string;
+  joinPolicy?: JoinPolicy;
 }
 
 export interface ClubResponseDTO {
   id: string;         // uuid
   name: string;
   nickname: string;
+  joinPolicy: JoinPolicy;
 }
+
+// --------------- CLUB MEMBERSHIP ---------------
+export type MembershipRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface JoinClubRequestDTO {
+  token?: string;
+}
+
+export interface InviteTokenResponseDTO {
+  token: string;
+  expiresAt: string;  // ISO date-time
+}
+
+export interface ClubMembershipRequestResponseDTO {
+  id: number;
+  clubId: string;     // uuid
+  userId: string;     // uuid
+  name: string;
+  nickname: string;
+  status: MembershipRequestStatus;
+  requestedAt: string;        // ISO date-time
+  reviewedAt?: string | null; // ISO date-time
+}
+
+export interface PageClubMembershipRequestResponseDTO
+  extends PageDTO<ClubMembershipRequestResponseDTO> {}
+
+// --------------- NOTIFICATIONS ---------------
+export type NotificationType =
+  | 'MEMBERSHIP_REQUEST'
+  | 'MEMBERSHIP_APPROVED'
+  | 'MEMBERSHIP_REJECTED';
+
+export interface NotificationResponseDTO {
+  id: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;  // ISO date-time
+}
+
+export interface PageNotificationResponseDTO extends PageDTO<NotificationResponseDTO> {}
 
 // --------------- CLUB MEMBERS ---------------
 export type ClubRole = 'DIRECTOR' | 'MEMBER';

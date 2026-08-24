@@ -1,0 +1,73 @@
+<div class="tab-content">
+    <div class="invite-card">
+        <h3>Convites</h3>
+        <p class="hint">Compartilhe este token com quem deseja convidar para o clube.</p>
+        @if (inviteToken()) {
+            <div class="token-box">
+                <code class="token-value">{{ showToken() ? inviteToken()!.token : '••••••' }}</code>
+                <button
+                        class="btn-icon"
+                        type="button"
+                        [title]="showToken() ? 'Ocultar token' : 'Mostrar token'"
+                        (click)="toggleToken()">
+                    <app-svg-icon
+                            [name]="showToken() ? 'visibility_off' : 'visibility'"
+                            size="20px"
+                            ariaLabel="Alternar visibilidade do token">
+                    </app-svg-icon>
+                </button>
+                <button class="btn-outline" (click)="copyToken()">
+                    {{ copied() ? 'Copiado!' : 'Copiar' }}
+                </button>
+                <button class="btn-danger" (click)="confirmRegenerate()">Regenerar</button>
+            </div>
+        } @else {
+            <button class="btn-primary" (click)="loadToken()">Gerar token de convite</button>
+        }
+    </div>
+
+    <h3 class="section-title">Solicitações pendentes</h3>
+
+    @if (loading()) {
+        <span class="hint">Carregando solicitações...</span>
+    } @else if (requests().length === 0) {
+        <app-empty-state
+                icon="groups"
+                title="Nenhuma solicitação pendente"
+                message="Quando alguém pedir para entrar no clube, aparecerá aqui." />
+    } @else {
+        <div class="requests-list">
+            @for (request of requests(); track request.id) {
+                <div class="request-card">
+                    <div class="request-info">
+                        <span class="request-name">{{ request.name }}</span>
+                        <span class="request-nick">{{ '@' + request.nickname }}</span>
+                    </div>
+                    <div class="request-actions">
+                        <button
+                                class="btn-approve"
+                                (click)="approve(request)"
+                                [disabled]="processingId() === request.id">
+                            Aprovar
+                        </button>
+                        <button
+                                class="btn-reject"
+                                (click)="reject(request)"
+                                [disabled]="processingId() === request.id">
+                            Recusar
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <app-confirm-dialog
+        #confirmRegenerateDialog
+        title="Regenerar token"
+        message="Ao regenerar, o token atual deixará de funcionar. Deseja continuar?"
+        icon="warning"
+        confirmLabel="Regenerar"
+        [danger]="true"
+        (confirmed)="regenerateToken()" />
+</div>

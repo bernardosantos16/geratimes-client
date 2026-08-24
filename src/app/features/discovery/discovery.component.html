@@ -1,0 +1,70 @@
+<section class="discovery">
+    <div class="discovery-header">
+        <h2>Descobrir clubes</h2>
+        <p>Encontre um clube e solicite entrada.</p>
+    </div>
+
+    <div class="search-box">
+        <app-svg-icon name="search" size="20px" ariaLabel="Buscar"></app-svg-icon>
+        <input
+                type="text"
+                [formControl]="searchControl"
+                placeholder="Buscar por nome ou apelido..."
+                class="search-input" />
+    </div>
+
+    @if (loading()) {
+        <app-loading-spinner label="Buscando clubes..." />
+    } @else if (searched() && results().length === 0) {
+        <app-empty-state
+                icon="search"
+                title="Nenhum clube encontrado"
+                message="Tente buscar por outro nome ou apelido." />
+    } @else if (results().length > 0) {
+        <div class="results-grid">
+            @for (club of results(); track club.id) {
+                <div class="result-card" [class.is-mine]="isMyClub(club)">
+                    <div class="card-top" [class.clickable]="isMyClub(club)" (click)="isMyClub(club) && goToClub(club)">
+                        <div class="club-avatar">{{ club.nickname[0]?.toUpperCase() }}</div>
+                        <div class="club-meta">
+                            <span class="club-name">{{ club.name }}</span>
+                            <span class="club-nick">{{ '@' + club.nickname }}</span>
+                        </div>
+                        <span class="policy-badge" [class.open]="club.joinPolicy === 'OPEN'">
+                            {{ club.joinPolicy === 'OPEN' ? 'Aberto' : 'Somente convite' }}
+                        </span>
+                    </div>
+
+                    @if (isMyClub(club)) {
+                        <div class="card-actions">
+                            <button class="btn-outline" (click)="goToClub(club)">Ver clube</button>
+                        </div>
+                    } @else if (joiningId() === club.id) {
+                        <div class="join-form">
+                            @if (club.joinPolicy === 'INVITE_ONLY') {
+                                <label class="join-label" for="token-{{ club.id }}">Token de convite</label>
+                                <input
+                                        id="token-{{ club.id }}"
+                                        type="text"
+                                        class="token-input"
+                                        placeholder="Cole o token de convite"
+                                        [value]="token()"
+                                        (input)="token.set(($any($event.target).value))" />
+                            }
+                            <div class="join-actions">
+                                <button class="btn-outline" (click)="cancelJoin()">Cancelar</button>
+                                <button class="btn-primary" (click)="submitJoin(club)" [disabled]="submitting()">
+                                    {{ submitting() ? 'Enviando...' : 'Solicitar entrada' }}
+                                </button>
+                            </div>
+                        </div>
+                    } @else {
+                        <div class="card-actions">
+                            <button class="btn-primary" (click)="startJoin(club)">Solicitar entrada</button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</section>

@@ -73,6 +73,14 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
         title: 'Dashboard — Ferino',
       },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/notifications.component').then(
+            (m) => m.NotificationsComponent
+          ),
+        title: 'Notificações — Ferino',
+      },
       // Clubs
       {
         path: 'clubs',
@@ -135,6 +143,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import('@features/clubs/club-matches/club-matches.component').then(
                 (m) => m.ClubMatchesComponent
+              ),
+          },
+          {
+            path: 'membership-requests',
+            loadComponent: () =>
+              import('@features/clubs/membership-requests/membership-requests.component').then(
+                (m) => m.MembershipRequestsComponent
               ),
           },
         ],

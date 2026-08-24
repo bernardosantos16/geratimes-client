@@ -1,0 +1,30 @@
+<app-page-header
+        title="Notificações"
+        subtitle="Acompanhe solicitações e novidades dos seus clubes"
+        eyebrow="Central de avisos" />
+
+@if (loading()) {
+    <app-loading-spinner label="Carregando notificações..." />
+} @else if (notifications().length === 0) {
+    <app-empty-state
+            icon="notifications"
+            title="Nenhuma notificação"
+            message="Você está em dia por aqui." />
+} @else {
+    <div class="notifications-list">
+        @for (notification of notifications(); track notification.id) {
+            <div
+                    class="notification-item"
+                    [class.unread]="!notification.read"
+                    (click)="markRead(notification)">
+                @if (!notification.read) {
+                    <span class="unread-dot"></span>
+                }
+                <div class="notification-body">
+                    <span class="notification-title">{{ notification.title }}</span>
+                    <span class="notification-message">{{ notification.message }}</span>
+                </div>
+            </div>
+        }
+    </div>
+}

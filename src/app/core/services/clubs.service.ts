@@ -12,6 +12,11 @@ import {
   ClubJerseyResponseDTO,
   AddJerseyRequestDTO,
   UpdateJerseyRequestDTO,
+  JoinClubRequestDTO,
+  InviteTokenResponseDTO,
+  ClubMembershipRequestResponseDTO,
+  PageClubMembershipRequestResponseDTO,
+  MembershipRequestStatus,
   PageableParams,
 } from '../models/api.models';
 import { environment } from '../../../environments/environment';
@@ -52,6 +57,57 @@ export class ClubsService {
 
   deleteClub(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  searchClubs(q: string): Observable<ClubResponseDTO[]> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<ClubResponseDTO[]>(`${this.baseUrl}/search`, { params });
+  }
+
+  // ── Membership ────────────────────────────────────────────────────────────
+  joinClub(clubId: string, dto: JoinClubRequestDTO): Observable<ClubMembershipRequestResponseDTO> {
+    return this.http.post<ClubMembershipRequestResponseDTO>(`${this.baseUrl}/${clubId}/invite`, dto);
+  }
+
+  generateInviteToken(clubId: string): Observable<InviteTokenResponseDTO> {
+    return this.http.post<InviteTokenResponseDTO>(`${this.baseUrl}/${clubId}/invite-token`, null);
+  }
+
+  getInviteToken(clubId: string): Observable<InviteTokenResponseDTO> {
+    return this.http.get<InviteTokenResponseDTO>(`${this.baseUrl}/${clubId}/invite-token`);
+  }
+
+  getMembershipRequests(
+    clubId: string,
+    status?: MembershipRequestStatus,
+    params?: PageableParams
+  ): Observable<PageClubMembershipRequestResponseDTO> {
+    let httpParams = buildPageableParams(params);
+    if (status) httpParams = httpParams.set('status', status);
+    return this.http.get<PageClubMembershipRequestResponseDTO>(
+      `${this.baseUrl}/${clubId}/membership-requests`,
+      { params: httpParams }
+    );
+  }
+
+  approveMembershipRequest(
+    clubId: string,
+    requestId: number
+  ): Observable<ClubMembershipRequestResponseDTO> {
+    return this.http.post<ClubMembershipRequestResponseDTO>(
+      `${this.baseUrl}/${clubId}/membership-requests/${requestId}/approve`,
+      null
+    );
+  }
+
+  rejectMembershipRequest(
+    clubId: string,
+    requestId: number
+  ): Observable<ClubMembershipRequestResponseDTO> {
+    return this.http.post<ClubMembershipRequestResponseDTO>(
+      `${this.baseUrl}/${clubId}/membership-requests/${requestId}/reject`,
+      null
+    );
   }
 
   // ── Members ───────────────────────────────────────────────────────────────
