@@ -23,7 +23,7 @@ const MATCH: MatchResponseDTO = {
 
 const MEMBER: ClubMemberResponseDTO = {
   id: 1, name: 'João', rating: 4, timesMvp: 2, timesChampion: 3,
-  clubRole: 'MEMBER', teamId: 1
+  clubRole: 'MEMBER', teamId: 1, isOwner: false
 };
 
 const JERSEY: ClubJerseyResponseDTO = { id: 1, name: 'Time 1', hexColor: '#ff0000', clubId: 'c1', isGoalkeeperJersey: false };

@@ -18,7 +18,7 @@ const MATCH: MatchResponseDTO = {
 
 const MEMBER: ClubMemberResponseDTO = {
   id: 1, name: 'João', rating: 4, timesMvp: 1, timesChampion: 2,
-  clubRole: 'MEMBER', teamId: 1
+  clubRole: 'MEMBER', teamId: 1, isOwner: false
 };
 
 const PARTICIPANT: MatchParticipantResponseDTO = {

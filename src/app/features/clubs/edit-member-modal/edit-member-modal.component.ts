@@ -24,8 +24,12 @@ export class EditMemberModalComponent implements OnInit {
 
   @Input({ required: true }) member!: ClubMemberResponseDTO;
   @Input() isDirector = false;
+  @Input() canPromote = false;
+  @Input() canDemote = false;
   @Output() save = new EventEmitter<SaveMemberEvent>();
   @Output() delete = new EventEmitter<void>();
+  @Output() promote = new EventEmitter<void>();
+  @Output() demote = new EventEmitter<void>();
   @Output() dismiss = new EventEmitter<void>();
 
   readonly form = this.fb.group({

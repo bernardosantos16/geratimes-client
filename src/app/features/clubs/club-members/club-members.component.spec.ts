@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ClubMembersComponent } from './club-members.component';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
@@ -10,7 +11,7 @@ import { ClubMemberResponseDTO } from '@core/models/api.models';
 function member(overrides: Partial<ClubMemberResponseDTO> = {}): ClubMemberResponseDTO {
   return {
     id: 1, name: 'João', rating: 4, timesMvp: 2, timesChampion: 3,
-    clubRole: 'MEMBER', ...overrides,
+    clubRole: 'MEMBER', isOwner: false, ...overrides,
   };
 }
 
@@ -27,6 +28,8 @@ describe('ClubMembersComponent', () => {
       addMember: vi.fn(),
       updateMember: vi.fn(),
       removeMember: vi.fn(),
+      promoteMember: vi.fn(),
+      demoteMember: vi.fn(),
     };
     toastMock = { success: vi.fn(), error: vi.fn() };
 
@@ -124,5 +127,61 @@ describe('ClubMembersComponent', () => {
     expect(clubsMock.removeMember).toHaveBeenCalledWith('c1', 2);
     expect(store.members().length).toBe(1);
     expect(toastMock.success).toHaveBeenCalledWith('Membro removido.');
+  });
+
+  it('should allow promote only for members with userId', () => {
+    expect(component.canPromote(member({ userId: 'u1', clubRole: 'MEMBER' }))).toBe(true);
+    expect(component.canPromote(member({ userId: null, clubRole: 'MEMBER' }))).toBe(false);
+    expect(component.canPromote(member({ userId: 'u1', clubRole: 'DIRECTOR' }))).toBe(false);
+  });
+
+  it('should allow demote only for directors that are not owner', () => {
+    expect(component.canDemote(member({ clubRole: 'DIRECTOR', isOwner: false }))).toBe(true);
+    expect(component.canDemote(member({ clubRole: 'DIRECTOR', isOwner: true }))).toBe(false);
+    expect(component.canDemote(member({ clubRole: 'MEMBER', isOwner: false }))).toBe(false);
+  });
+
+  it('should promote member and update store', () => {
+    const target = member({ id: 2, name: 'Ana', clubRole: 'MEMBER' });
+    clubsMock.promoteMember.mockReturnValue(of(void 0));
+    store.members.set([member({ name: 'Zé' }), target]);
+    component['memberToPromote'].set(target);
+
+    component.promoteMember();
+
+    expect(clubsMock.promoteMember).toHaveBeenCalledWith('c1', 2);
+    expect(store.members().find(m => m.id === 2)?.clubRole).toBe('DIRECTOR');
+    expect(toastMock.success).toHaveBeenCalledWith('Ana agora é diretor do clube.');
+  });
+
+  it('should demote member and update store', () => {
+    const target = member({ id: 2, name: 'Ana', clubRole: 'DIRECTOR' });
+    clubsMock.demoteMember.mockReturnValue(of(void 0));
+    store.members.set([member({ name: 'Zé' }), target]);
+    component['memberToDemote'].set(target);
+
+    component.demoteMember();
+
+    expect(clubsMock.demoteMember).toHaveBeenCalledWith('c1', 2);
+    expect(store.members().find(m => m.id === 2)?.clubRole).toBe('MEMBER');
+    expect(toastMock.success).toHaveBeenCalledWith('Ana agora é membro do clube.');
+  });
+
+  it('should show friendly message on 409 promote conflict', () => {
+    clubsMock.promoteMember.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
+    component['memberToPromote'].set(member({ id: 2, name: 'Ana' }));
+
+    component.promoteMember();
+
+    expect(toastMock.error).toHaveBeenCalledWith('Não é possível promover este membro.');
+  });
+
+  it('should show generic message on non-409 error', () => {
+    clubsMock.demoteMember.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+    component['memberToDemote'].set(member({ id: 2, name: 'Ana', clubRole: 'DIRECTOR' }));
+
+    component.demoteMember();
+
+    expect(toastMock.error).toHaveBeenCalledWith('Erro ao rebaixar diretor.');
   });
 });

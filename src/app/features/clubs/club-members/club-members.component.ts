@@ -1,11 +1,12 @@
 import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy, DestroyRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClubsService } from '@core/services/clubs.service';
 import { ToastService } from '@core/services/toast.service';
 import { ClubDetailStore } from '@core/services/club-detail.store';
-import { ClubMemberResponseDTO, AddClubMemberRequestDTO, UpdateClubMemberRequestDTO } from '@core/models/api.models';
+import { ClubMemberResponseDTO, AddClubMemberRequestDTO, UpdateClubMemberRequestDTO, ProblemDetail } from '@core/models/api.models';
 import { SquareRatingComponent } from '@shared/components/square-rating/square-rating.component';
 import { ClubRolePipe } from '@shared/pipes/app.pipes';
 import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confirm-dialog.component';
@@ -34,9 +35,13 @@ export class ClubMembersComponent implements OnInit {
     readonly store = inject(ClubDetailStore);
 
     @ViewChild('confirmDeleteMember') confirmDeleteMember!: ConfirmDialogComponent;
+    @ViewChild('confirmPromoteMember') confirmPromoteMember!: ConfirmDialogComponent;
+    @ViewChild('confirmDemoteMember') confirmDemoteMember!: ConfirmDialogComponent;
 
     readonly editingMember = signal<ClubMemberResponseDTO | null>(null);
     protected readonly memberToDelete = signal<ClubMemberResponseDTO | null>(null);
+    readonly memberToPromote = signal<ClubMemberResponseDTO | null>(null);
+    readonly memberToDemote = signal<ClubMemberResponseDTO | null>(null);
 
     readonly sortField = signal<'name' | 'rating' | 'timesMvp' | 'timesChampion'>('name');
     readonly sortDirection = signal<'asc' | 'desc'>('asc');
@@ -171,5 +176,75 @@ export class ClubMembersComponent implements OnInit {
                 },
                 error: (err: unknown) => this.toast.error('Erro ao remover membro.'),
             });
+    }
+
+    canPromote(member: ClubMemberResponseDTO): boolean {
+        return !!member.userId && member.clubRole === 'MEMBER';
+    }
+
+    canDemote(member: ClubMemberResponseDTO): boolean {
+        return member.clubRole === 'DIRECTOR' && !member.isOwner;
+    }
+
+    confirmPromote(member: ClubMemberResponseDTO): void {
+        this.memberToPromote.set(member);
+        this.confirmPromoteMember?.open();
+    }
+
+    confirmDemote(member: ClubMemberResponseDTO): void {
+        this.memberToDemote.set(member);
+        this.confirmDemoteMember?.open();
+    }
+
+    promoteMember(): void {
+        const member = this.memberToPromote();
+        if (!member) return;
+        this.clubsService.promoteMember(this.store.clubId(), member.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.store.members.update((arr) =>
+                        arr.map((m) => m.id === member.id ? { ...m, clubRole: 'DIRECTOR' as const } : m)
+                    );
+                    this.closeEditMember();
+                    this.memberToPromote.set(null);
+                    this.toast.success(`${member.name} agora é diretor do clube.`);
+                },
+                error: (err: unknown) => this.handleRoleChangeError(err, 'promote'),
+            });
+    }
+
+    demoteMember(): void {
+        const member = this.memberToDemote();
+        if (!member) return;
+        this.clubsService.demoteMember(this.store.clubId(), member.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => {
+                    this.store.members.update((arr) =>
+                        arr.map((m) => m.id === member.id ? { ...m, clubRole: 'MEMBER' as const } : m)
+                    );
+                    this.closeEditMember();
+                    this.memberToDemote.set(null);
+                    this.toast.success(`${member.name} agora é membro do clube.`);
+                },
+                error: (err: unknown) => this.handleRoleChangeError(err, 'demote'),
+            });
+    }
+
+    private handleRoleChangeError(err: unknown, action: 'promote' | 'demote'): void {
+        const httpErr = err as HttpErrorResponse;
+        if (httpErr?.status === 409) {
+            const detail = (httpErr.error as ProblemDetail | undefined)?.detail;
+            this.toast.error(detail ?? (action === 'promote'
+                ? 'Não é possível promover este membro.'
+                : 'Não é possível rebaixar este diretor.'));
+        } else {
+            this.toast.error(action === 'promote'
+                ? 'Erro ao promover membro.'
+                : 'Erro ao rebaixar diretor.');
+        }
+        this.memberToPromote.set(null);
+        this.memberToDemote.set(null);
     }
 }

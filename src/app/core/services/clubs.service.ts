@@ -136,6 +136,14 @@ export class ClubsService {
     return this.http.delete<void>(`${this.baseUrl}/${clubId}/members/${memberId}`);
   }
 
+  promoteMember(clubId: string, memberId: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${clubId}/members/${memberId}/promote`, null);
+  }
+
+  demoteMember(clubId: string, memberId: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/${clubId}/members/${memberId}/demote`, null);
+  }
+
   // ── Jerseys ───────────────────────────────────────────────────────────────
   getJerseys(clubId: string): Observable<ClubJerseyResponseDTO[]> {
     return this.http.get<ClubJerseyResponseDTO[]>(`${this.baseUrl}/${clubId}/jerseys`);

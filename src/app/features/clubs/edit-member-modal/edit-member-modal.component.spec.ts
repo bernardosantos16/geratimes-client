@@ -6,7 +6,7 @@ import { EditMemberModalComponent, SaveMemberEvent } from './edit-member-modal.c
 
 const MEMBER: ClubMemberResponseDTO = {
   id: 1, name: 'João', rating: 4, timesMvp: 2, timesChampion: 3,
-  clubRole: 'MEMBER'
+  clubRole: 'MEMBER', isOwner: false
 };
 
 describe('EditMemberModalComponent', () => {
@@ -81,5 +81,59 @@ describe('EditMemberModalComponent', () => {
     fixture.detectChanges();
     const btn = fixture.debugElement.query(By.css('.btn-danger'));
     expect(btn).toBeNull();
+  });
+
+  it('should hide promote button when canPromote is false', () => {
+    component.canPromote = false;
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('.btn-outline'))).toBeNull();
+  });
+
+  it('should show promote button when canPromote is true', () => {
+    component.canPromote = true;
+    fixture.detectChanges();
+    const btn = fixture.debugElement.query(By.css('.btn-outline'));
+    expect(btn).toBeTruthy();
+    expect(btn.nativeElement.textContent.trim()).toBe('Tornar diretor');
+  });
+
+  it('should hide demote button when canDemote is false', () => {
+    component.canDemote = false;
+    fixture.detectChanges();
+    const demoteBtn = fixture.debugElement.queryAll(By.css('.btn-cancel'))
+      .find(b => b.nativeElement.textContent.trim() === 'Rebaixar a membro');
+    expect(demoteBtn).toBeUndefined();
+  });
+
+  it('should show demote button when canDemote is true', () => {
+    component.canDemote = true;
+    fixture.detectChanges();
+    const btn = fixture.debugElement.queryAll(By.css('.btn-cancel'))
+      .find(b => b.nativeElement.textContent.trim() === 'Rebaixar a membro');
+    expect(btn).toBeTruthy();
+  });
+
+  it('should emit promote when promote button clicked', () => {
+    const spy = vi.fn();
+    component.promote.subscribe(spy);
+    component.canPromote = true;
+    fixture.detectChanges();
+
+    fixture.debugElement.query(By.css('.btn-outline')).triggerEventHandler('click', null);
+
+    expect(spy).toHaveBeenCalledOnce();
+  });
+
+  it('should emit demote when demote button clicked', () => {
+    const spy = vi.fn();
+    component.demote.subscribe(spy);
+    component.canDemote = true;
+    fixture.detectChanges();
+
+    const btn = fixture.debugElement.queryAll(By.css('.btn-cancel'))
+      .find(b => b.nativeElement.textContent.trim() === 'Rebaixar a membro');
+    btn!.triggerEventHandler('click', null);
+
+    expect(spy).toHaveBeenCalledOnce();
   });
 });

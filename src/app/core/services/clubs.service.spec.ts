@@ -15,7 +15,7 @@ describe('ClubsService', () => {
   let httpTesting: HttpTestingController;
   const base = `${environment.apiUrl}/api/clubs`;
   const club: ClubResponseDTO = { id: 'c1', name: 'Ferino FC', nickname: 'ferino', joinPolicy: 'INVITE_ONLY' };
-  const member: ClubMemberResponseDTO = { id: 1, name: 'Player 1', clubRole: 'MEMBER' };
+  const member: ClubMemberResponseDTO = { id: 1, name: 'Player 1', clubRole: 'MEMBER', isOwner: false };
   const jersey: ClubJerseyResponseDTO = { id: 10, name: 'Home', hexColor: '#4dff8f', isGoalkeeperJersey: false, clubId: 'c1' };
   const emptyPage: PageClubMemberResponseDTO = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 100, first: true, last: true, empty: true, numberOfElements: 0 };
 
@@ -108,6 +108,20 @@ describe('ClubsService', () => {
     service.removeMember('c1', 1).subscribe();
     const req = httpTesting.expectOne(`${base}/c1/members/1`);
     expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  it('should promote member via PATCH', () => {
+    service.promoteMember('c1', 1).subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/members/1/promote`);
+    expect(req.request.method).toBe('PATCH');
+    req.flush(null);
+  });
+
+  it('should demote member via PATCH', () => {
+    service.demoteMember('c1', 1).subscribe();
+    const req = httpTesting.expectOne(`${base}/c1/members/1/demote`);
+    expect(req.request.method).toBe('PATCH');
     req.flush(null);
   });
 

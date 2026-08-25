@@ -136,13 +136,14 @@ export interface UpdateClubMemberRequestDTO {
 
 export interface ClubMemberResponseDTO {
   id: number;
-  userId?: string;    // uuid, optional
+  userId?: string | null;    // uuid, null when member has no account
   name: string;
   rating?: number;
   timesMvp?: number;
   timesChampion?: number;
   teamId?: number;
   clubRole: ClubRole;
+  isOwner: boolean;
 }
 
 export interface PageClubMemberResponseDTO extends PageDTO<ClubMemberResponseDTO> {}

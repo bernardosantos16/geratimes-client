@@ -30,6 +30,12 @@
 
     <div class="modal-footer">
       <button class="btn-cancel" (click)="dismiss.emit()">Cancelar</button>
+      @if (canPromote) {
+        <button class="btn-outline" (click)="promote.emit()">Tornar diretor</button>
+      }
+      @if (canDemote) {
+        <button class="btn-cancel" (click)="demote.emit()">Rebaixar a membro</button>
+      }
       <button class="btn-primary" [disabled]="form.invalid" (click)="save.emit(form.getRawValue())">Salvar</button>
       @if (!isDirector) {
         <button class="btn-danger" (click)="delete.emit()">Excluir</button>

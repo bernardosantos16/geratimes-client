@@ -101,8 +101,12 @@
     <app-edit-member-modal
         [member]="editingMember()!"
         [isDirector]="editingMember()!.clubRole === 'DIRECTOR'"
+        [canPromote]="canPromote(editingMember()!)"
+        [canDemote]="canDemote(editingMember()!)"
         (save)="saveMemberChanges($event)"
         (delete)="deleteMemberConfirm()"
+        (promote)="confirmPromote(editingMember()!)"
+        (demote)="confirmDemote(editingMember()!)"
         (dismiss)="closeEditMember()" />
 }
 
@@ -115,4 +119,25 @@
     [danger]="true"
     (confirmed)="deleteSelectedMember()"
     (cancelled)="memberToDelete.set(null)"
+/>
+
+<app-confirm-dialog
+    #confirmPromoteMember
+    title="Tornar diretor"
+    [message]="'Tornar ' + (memberToPromote()?.name ?? '') + ' diretor do clube?'"
+    icon='warning'
+    confirmLabel="Confirmar"
+    (confirmed)="promoteMember()"
+    (cancelled)="memberToPromote.set(null)"
+/>
+
+<app-confirm-dialog
+    #confirmDemoteMember
+    title="Rebaixar a membro"
+    [message]="'Rebaixar ' + (memberToDemote()?.name ?? '') + ' a membro?'"
+    icon='warning'
+    confirmLabel="Rebaixar"
+    [danger]="true"
+    (confirmed)="demoteMember()"
+    (cancelled)="memberToDemote.set(null)"
 />
