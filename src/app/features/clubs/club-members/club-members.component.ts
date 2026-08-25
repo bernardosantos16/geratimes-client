@@ -183,7 +183,7 @@ export class ClubMembersComponent implements OnInit {
     }
 
     canDemote(member: ClubMemberResponseDTO): boolean {
-        return member.clubRole === 'DIRECTOR' && !member.isOwner;
+        return !!member.userId && member.clubRole === 'DIRECTOR' && !member.isOwner;
     }
 
     confirmPromote(member: ClubMemberResponseDTO): void {

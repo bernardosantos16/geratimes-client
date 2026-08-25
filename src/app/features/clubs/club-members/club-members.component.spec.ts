@@ -136,9 +136,10 @@ describe('ClubMembersComponent', () => {
   });
 
   it('should allow demote only for directors that are not owner', () => {
-    expect(component.canDemote(member({ clubRole: 'DIRECTOR', isOwner: false }))).toBe(true);
-    expect(component.canDemote(member({ clubRole: 'DIRECTOR', isOwner: true }))).toBe(false);
-    expect(component.canDemote(member({ clubRole: 'MEMBER', isOwner: false }))).toBe(false);
+    expect(component.canDemote(member({ userId: 'u1', clubRole: 'DIRECTOR', isOwner: false }))).toBe(true);
+    expect(component.canDemote(member({ userId: 'u1', clubRole: 'DIRECTOR', isOwner: true }))).toBe(false);
+    expect(component.canDemote(member({ userId: null, clubRole: 'DIRECTOR', isOwner: false }))).toBe(false);
+    expect(component.canDemote(member({ userId: 'u1', clubRole: 'MEMBER', isOwner: false }))).toBe(false);
   });
 
   it('should promote member and update store', () => {
