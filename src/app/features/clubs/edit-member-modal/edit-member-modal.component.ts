@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ClubMemberResponseDTO } from '@core/models/api.models';
 import { SquareRatingComponent } from '@shared/components/square-rating/square-rating.component';
+import { SvgIconComponent } from '@shared/components/svg-icon/svg-icon.component';
+import { ClubRolePipe } from '@shared/pipes/app.pipes';
 
 export interface SaveMemberEvent {
   name: string;
@@ -14,7 +16,7 @@ export interface SaveMemberEvent {
 @Component({
   selector: 'app-edit-member-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SquareRatingComponent],
+  imports: [CommonModule, ReactiveFormsModule, SquareRatingComponent, SvgIconComponent, ClubRolePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'edit-member-modal.component.html',
   styleUrls: ['edit-member-modal.component.scss'],
@@ -39,6 +41,13 @@ export class EditMemberModalComponent implements OnInit {
     timesChampion: [0, [Validators.min(0)]],
   });
 
+  get initials(): string {
+    const parts = (this.member?.name ?? '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
   ngOnInit(): void {
     this.form.patchValue({
       name: this.member.name,
@@ -46,6 +55,11 @@ export class EditMemberModalComponent implements OnInit {
       timesMvp: this.member.timesMvp ?? 0,
       timesChampion: this.member.timesChampion ?? 0,
     });
+  }
+
+  adjustStat(field: 'timesMvp' | 'timesChampion', delta: number): void {
+    const control = this.form.controls[field];
+    control.patchValue(Math.max(0, (control.value ?? 0) + delta));
   }
 
   onBackdropClick(): void {

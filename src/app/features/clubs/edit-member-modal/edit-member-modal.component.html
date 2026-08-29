@@ -1,31 +1,63 @@
 <div class="modal-backdrop" (click)="onBackdropClick()">
   <div class="modal-dialog" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Editar Membro</h2>
-      <button class="modal-close" (click)="dismiss.emit()">×</button>
+      <div class="member-avatar" aria-hidden="true">{{ initials }}</div>
+      <div class="header-titles">
+        <h2>Editar Membro</h2>
+        <span class="role-badge" [class.director]="member.clubRole === 'DIRECTOR'">
+          {{ member.clubRole | clubRole }}
+        </span>
+      </div>
+      <button class="modal-close" (click)="dismiss.emit()" aria-label="Fechar">
+        <app-svg-icon name="close" size="20px" />
+      </button>
     </div>
 
     <form [formGroup]="form" class="modal-body">
-      <div class="form-group">
-        <label>Nome</label>
-        <input type="text" formControlName="name" class="form-input" />
-      </div>
-      <div class="form-group">
-        <label>Nível</label>
-        <app-square-rating
-          [value]="form.controls.rating.value"
-          [interactive]="true"
-          (ratingChange)="form.patchValue({ rating: $event })">
-        </app-square-rating>
-      </div>
-      <div class="form-group">
-        <label>Vezes MVP</label>
-        <input type="number" formControlName="timesMvp" class="form-input" min="0" />
-      </div>
-      <div class="form-group">
-        <label>Vezes Campeão</label>
-        <input type="number" formControlName="timesChampion" class="form-input" min="0" />
-      </div>
+      <section class="form-section">
+        <span class="section-label">Informações</span>
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" formControlName="name" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Nível</label>
+          <app-square-rating
+            [value]="form.controls.rating.value"
+            [interactive]="true"
+            (ratingChange)="form.patchValue({ rating: $event })">
+          </app-square-rating>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <span class="section-label">Estatísticas</span>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <app-svg-icon name="trophy" size="16px" color="var(--yellow)" />
+              <span>Vezes MVP</span>
+            </div>
+            <div class="stepper">
+              <button type="button" class="stepper-btn" (click)="adjustStat('timesMvp', -1)" aria-label="Diminuir vezes MVP">−</button>
+              <input type="number" formControlName="timesMvp" min="0" class="stepper-input" />
+              <button type="button" class="stepper-btn" (click)="adjustStat('timesMvp', 1)" aria-label="Aumentar vezes MVP">+</button>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <app-svg-icon name="trophy" size="16px" color="var(--yellow)" />
+              <span>Vezes Campeão</span>
+            </div>
+            <div class="stepper">
+              <button type="button" class="stepper-btn" (click)="adjustStat('timesChampion', -1)" aria-label="Diminuir vezes campeão">−</button>
+              <input type="number" formControlName="timesChampion" min="0" class="stepper-input" />
+              <button type="button" class="stepper-btn" (click)="adjustStat('timesChampion', 1)" aria-label="Aumentar vezes campeão">+</button>
+            </div>
+          </div>
+        </div>
+      </section>
     </form>
 
     <div class="modal-footer">
@@ -38,7 +70,10 @@
       }
       <button class="btn-primary" [disabled]="form.invalid" (click)="save.emit(form.getRawValue())">Salvar</button>
       @if (!isDirector) {
-        <button class="btn-danger" (click)="delete.emit()">Excluir</button>
+        <button class="btn-danger" (click)="delete.emit()">
+          <app-svg-icon name="delete" size="16px" />
+          Excluir
+        </button>
       }
     </div>
   </div>
